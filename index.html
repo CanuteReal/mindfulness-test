@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.json">
+<title>Mindfulness Tracker</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #334155;
+  --border: #475569;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --accent: #818cf8;
+  --accent2: #6366f1;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --rose: #fb7185;
+  --pink: #f0abfc;
+  --sky: #38bdf8;
+  --orange: #fb923c;
+  --radius: 16px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  padding-bottom: calc(80px + var(--safe-b));
+}
+
+/* ── Nav ── */
+nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--surface2);
+  display: flex;
+  padding-bottom: var(--safe-b);
+  z-index: 100;
+}
+nav button {
+  flex: 1; background: none; border: none; color: var(--text2);
+  padding: 10px 0 8px; font-size: 9px; display: flex; flex-direction: column;
+  align-items: center; gap: 3px; cursor: pointer; transition: color .2s;
+}
+nav button.active { color: var(--accent); }
+nav button svg { width: 22px; height: 22px; }
+
+/* ── Pages ── */
+.page { display: none; padding: 20px 16px 24px; animation: fadeIn .25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { color: var(--text2); font-size: 14px; margin-bottom: 20px; }
+
+/* ── Cards ── */
+.card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 12px;
+}
+.card-sm { padding: 12px 14px; }
+
+/* ── Forms ── */
+label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+input, textarea, select {
+  width: 100%; background: var(--surface2); border: 1px solid transparent;
+  border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 16px;
+  font-family: inherit; outline: none; transition: border-color .2s;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+textarea { resize: vertical; min-height: 80px; }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+
+.form-row { margin-bottom: 14px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--accent); color: #fff; border: none; border-radius: 12px;
+  padding: 14px 24px; font-size: 16px; font-weight: 600; cursor: pointer;
+  width: 100%; transition: background .2s, transform .1s;
+}
+.btn:active { transform: scale(.97); background: var(--accent2); }
+.btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 8px; width: auto; }
+.btn-outline { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); }
+.btn-outline:active { background: var(--accent); color: #fff; }
+.btn-green { background: var(--green); color: #0f172a; }
+.btn-green:active { background: #10b981; }
+
+/* ── Feeling Picker ── */
+.feeling-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.feeling-btn {
+  padding: 8px 14px; border-radius: 20px; border: 1.5px solid var(--surface2);
+  background: transparent; color: var(--text2); font-size: 13px; cursor: pointer;
+  transition: all .2s;
+}
+.feeling-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(129,140,248,.12); }
+
+/* ── Activity & Journal Entries ── */
+.entry { display: flex; gap: 12px; align-items: flex-start; }
+.entry-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+.entry-body { flex: 1; min-width: 0; }
+.entry-meta { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
+.entry-title { font-size: 15px; font-weight: 600; }
+.entry-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.entry-feeling { display: inline-block; font-size: 11px; background: var(--surface2); padding: 2px 8px; border-radius: 10px; margin-top: 4px; margin-right: 2px; }
+.entry-topic { display: inline-block; font-size: 11px; background: rgba(56,189,248,.12); color: var(--sky); padding: 2px 8px; border-radius: 10px; margin-top: 4px; margin-right: 2px; }
+.entry-actions { display: flex; gap: 6px; margin-top: 6px; }
+.entry-del { background: none; border: none; color: var(--text2); font-size: 11px; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
+.entry-del:hover { color: var(--rose); background: rgba(251,113,133,.1); }
+
+/* ── Timer ── */
+.timer-card { background: var(--surface); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; text-align: center; }
+.timer-display {
+  font-size: 64px; font-weight: 200; letter-spacing: -2px; margin: 8px 0;
+  font-variant-numeric: tabular-nums; line-height: 1;
+  transition: color .3s;
+}
+.timer-display.running { color: var(--accent); }
+.timer-display.done { color: var(--green); }
+.timer-presets { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+.preset-btn {
+  padding: 6px 12px; border-radius: 16px; border: 1.5px solid var(--surface2);
+  background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; transition: all .2s;
+}
+.preset-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(129,140,248,.12); }
+.timer-controls { display: flex; gap: 10px; justify-content: center; }
+.timer-btn {
+  padding: 12px 28px; border-radius: 50px; border: none; font-size: 15px;
+  font-weight: 600; cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.timer-btn-primary { background: var(--accent); color: #fff; }
+.timer-btn-primary:active { background: var(--accent2); transform: scale(.97); }
+.timer-btn-secondary { background: var(--surface2); color: var(--text2); }
+.timer-btn-secondary:active { opacity: .7; }
+.timer-btn-log { background: var(--green); color: #0f172a; }
+.timer-btn-log:active { background: #10b981; transform: scale(.97); }
+.timer-progress-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; margin: 4px 0; }
+.timer-ring-svg { transform: rotate(-90deg); }
+.timer-ring-bg { fill: none; stroke: var(--surface2); stroke-width: 4; }
+.timer-ring-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset .9s linear, stroke .3s; }
+.timer-ring-fill.done { stroke: var(--green); }
+.timer-inner { position: absolute; }
+
+/* ── Calendar ── */
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.cal-header h2 { font-size: 18px; }
+.cal-nav { background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; padding: 4px 10px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-day-label { font-size: 11px; color: var(--text2); padding: 4px 0; font-weight: 600; }
+.cal-day {
+  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; border-radius: 12px; font-size: 14px; cursor: pointer;
+  position: relative; transition: background .15s;
+}
+.cal-day:hover { background: var(--surface2); }
+.cal-day.today { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cal-day.selected { background: var(--accent); color: #fff; }
+.cal-day.other-month { color: var(--surface2); }
+.cal-dots { display: flex; gap: 2px; position: absolute; bottom: 4px; }
+.cal-dots span { width: 4px; height: 4px; border-radius: 50%; }
+.cal-day-detail { margin-top: 16px; }
+.cal-day-detail h3 { font-size: 15px; margin-bottom: 10px; color: var(--text2); }
+
+/* ── Habits ── */
+.habit-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px; background: var(--surface); border-radius: var(--radius); margin-bottom: 8px;
+}
+.habit-check {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface2);
+  background: none; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; transition: all .2s; color: transparent;
+}
+.habit-check.done { border-color: var(--green); background: var(--green); color: #fff; }
+.habit-check svg { width: 16px; height: 16px; }
+.habit-info { flex: 1; min-width: 0; }
+.habit-name { font-size: 15px; font-weight: 600; }
+.habit-streak { font-size: 12px; color: var(--text2); }
+.habit-del { background: none; border: none; color: var(--text2); cursor: pointer; padding: 4px; border-radius: 6px; }
+.habit-del:hover { color: var(--rose); }
+.habit-week { display: flex; gap: 4px; margin-top: 6px; }
+.habit-week-dot {
+  width: 18px; height: 18px; border-radius: 4px; background: var(--surface2);
+  font-size: 9px; display: flex; align-items: center; justify-content: center; color: var(--text2);
+}
+
+/* ── Stats ── */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat-box { background: var(--surface); border-radius: var(--radius); padding: 16px; }
+.stat-num { font-size: 36px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 12px; color: var(--text2); }
+.stat-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.section-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.mood-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 6px; }
+.mood-cell {
+  aspect-ratio: 1; border-radius: 5px; display: flex; align-items: center;
+  justify-content: center; font-size: 9px; color: var(--text2); cursor: default;
+}
+.mood-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.mood-legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text2); }
+.mood-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+.bar-row { margin-bottom: 10px; }
+.bar-label-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+.bar-val { color: var(--text2); font-size: 12px; }
+.bar-track { background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width .6s ease; }
+.export-row { display: flex; gap: 10px; margin-top: 4px; }
+.habit-stat-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--surface2); }
+.habit-stat-row:last-child { border-bottom: none; }
+.habit-stat-color { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.habit-stat-name { flex: 1; font-size: 14px; }
+.habit-stat-streak { font-size: 13px; color: var(--text2); }
+
+/* ── Empty & Modal ── */
+.empty-state { text-align: center; color: var(--text2); padding: 40px 20px; font-size: 14px; line-height: 1.6; }
+.empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+
+.modal-bg {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 200; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 24px 24px 0 0; width: 100%;
+  max-width: 500px; max-height: 88dvh; overflow-y: auto;
+  padding: 24px 20px calc(20px + var(--safe-b));
+  animation: slideUp .3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } }
+.modal h2 { font-size: 20px; margin-bottom: 18px; }
+.modal-close {
+  float: right; background: var(--surface2); border: none; color: var(--text);
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ Activities Page ══════════ -->
+<div id="pg-activities" class="page active">
+  <h1>Activities</h1>
+  <p class="subtitle">Log your mindful moments</p>
+
+  <!-- Timer Card -->
+  <div class="timer-card">
+    <div class="timer-presets">
+      <button class="preset-btn active" onclick="setPreset(5,this)">5m</button>
+      <button class="preset-btn" onclick="setPreset(10,this)">10m</button>
+      <button class="preset-btn" onclick="setPreset(15,this)">15m</button>
+      <button class="preset-btn" onclick="setPreset(20,this)">20m</button>
+      <button class="preset-btn" onclick="setPreset(30,this)">30m</button>
+    </div>
+    <div class="timer-progress-ring">
+      <svg class="timer-ring-svg" id="timer-svg" width="160" height="160" viewBox="0 0 160 160">
+        <circle class="timer-ring-bg" cx="80" cy="80" r="72"/>
+        <circle class="timer-ring-fill" id="timer-ring" cx="80" cy="80" r="72"/>
+      </svg>
+      <div class="timer-inner">
+        <div class="timer-display" id="timer-display">5:00</div>
+      </div>
+    </div>
+    <div class="timer-controls" id="timer-controls">
+      <button class="timer-btn timer-btn-primary" id="timer-main-btn" onclick="timerToggle()">Start</button>
+      <button class="timer-btn timer-btn-secondary" id="timer-reset-btn" onclick="timerReset()" style="display:none">Reset</button>
+    </div>
+    <div id="timer-log-row" style="margin-top:10px;display:none">
+      <button class="timer-btn timer-btn-log" onclick="timerLog()" style="width:100%;padding:12px">Log this session</button>
+    </div>
+  </div>
+
+  <button class="btn btn-outline" onclick="openModal('activity')">+ Log manually</button>
+  <div id="activity-list" style="margin-top:16px"></div>
+</div>
+
+<!-- ══════════ Journal Page ══════════ -->
+<div id="pg-journal" class="page">
+  <h1>Journal</h1>
+  <p class="subtitle">Mood & reflections</p>
+  <button class="btn" onclick="openModal('journal')">+ New Entry</button>
+  <div id="journal-list" style="margin-top:16px"></div>
+</div>
+
+<!-- ══════════ Calendar Page ══════════ -->
+<div id="pg-calendar" class="page">
+  <h1>Calendar</h1>
+  <p class="subtitle">Your mindfulness at a glance</p>
+  <div class="card" id="calendar-card"></div>
+  <div id="cal-detail"></div>
+</div>
+
+<!-- ══════════ Habits Page ══════════ -->
+<div id="pg-habits" class="page">
+  <h1>Habits</h1>
+  <p class="subtitle">Build consistency</p>
+  <button class="btn" onclick="openModal('habit')" style="margin-bottom:16px">+ New Habit</button>
+  <div id="habit-list"></div>
+</div>
+
+<!-- ══════════ Stats Page ══════════ -->
+<div id="pg-stats" class="page">
+  <h1>Stats</h1>
+  <p class="subtitle">Your progress at a glance</p>
+  <div id="stats-content"></div>
+</div>
+
+<!-- ══════════ Activity Modal ══════════ -->
+<div class="modal-bg" id="modal-activity" onclick="closeModal(event,'activity')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModalDirect('activity')">&times;</button>
+    <h2>Log Activity</h2>
+    <div class="form-row">
+      <label>Activity</label>
+      <input id="act-name" placeholder="e.g. Meditation, Yoga, Breathwork">
+    </div>
+    <div class="form-row form-grid">
+      <div>
+        <label>Duration (min)</label>
+        <input id="act-dur" type="number" min="1" value="10">
+      </div>
+      <div>
+        <label>Time</label>
+        <input id="act-time" type="time">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>How did it feel?</label>
+      <div class="feeling-row" id="act-feelings">
+        <button class="feeling-btn" data-v="Calm">Calm</button>
+        <button class="feeling-btn" data-v="Focused">Focused</button>
+        <button class="feeling-btn" data-v="Relaxed">Relaxed</button>
+        <button class="feeling-btn" data-v="Restless">Restless</button>
+        <button class="feeling-btn" data-v="Energized">Energized</button>
+        <button class="feeling-btn" data-v="Sleepy">Sleepy</button>
+        <button class="feeling-btn" data-v="Grateful">Grateful</button>
+        <button class="feeling-btn" data-v="Anxious">Anxious</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Notes (optional)</label>
+      <textarea id="act-notes" rows="2" placeholder="Any thoughts..."></textarea>
+    </div>
+    <button class="btn" onclick="saveActivity()">Save Activity</button>
+  </div>
+</div>
+
+<!-- ══════════ Journal Modal ══════════ -->
+<div class="modal-bg" id="modal-journal" onclick="closeModal(event,'journal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModalDirect('journal')">&times;</button>
+    <h2>Journal Entry</h2>
+    <div class="form-row form-grid">
+      <div>
+        <label>Mood</label>
+        <select id="j-mood">
+          <option value="Great">😊 Great</option>
+          <option value="Good" selected>🙂 Good</option>
+          <option value="Okay">😐 Okay</option>
+          <option value="Low">😔 Low</option>
+          <option value="Rough">😢 Rough</option>
+        </select>
+      </div>
+      <div>
+        <label>Time</label>
+        <input id="j-time" type="time">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Topics (optional)</label>
+      <input id="j-topics" placeholder="gratitude, work, anxiety...">
+    </div>
+    <div class="form-row">
+      <label>What's on your mind?</label>
+      <textarea id="j-text" rows="5" placeholder="Write freely..."></textarea>
+    </div>
+    <button class="btn" onclick="saveJournal()">Save Entry</button>
+  </div>
+</div>
+
+<!-- ══════════ Habit Modal ══════════ -->
+<div class="modal-bg" id="modal-habit" onclick="closeModal(event,'habit')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModalDirect('habit')">&times;</button>
+    <h2>New Habit</h2>
+    <div class="form-row">
+      <label>Habit name</label>
+      <input id="h-name" placeholder="e.g. 10 min meditation">
+    </div>
+    <div class="form-row">
+      <label>Color</label>
+      <div class="feeling-row" id="h-colors">
+        <button class="feeling-btn selected" data-v="#818cf8" style="color:#818cf8;border-color:#818cf8">Indigo</button>
+        <button class="feeling-btn" data-v="#34d399" style="color:#34d399">Green</button>
+        <button class="feeling-btn" data-v="#fbbf24" style="color:#fbbf24">Amber</button>
+        <button class="feeling-btn" data-v="#fb7185" style="color:#fb7185">Rose</button>
+        <button class="feeling-btn" data-v="#38bdf8" style="color:#38bdf8">Sky</button>
+        <button class="feeling-btn" data-v="#f0abfc" style="color:#f0abfc">Pink</button>
+      </div>
+    </div>
+    <button class="btn" onclick="saveHabit()">Create Habit</button>
+  </div>
+</div>
+
+<!-- ══════════ Nav ══════════ -->
+<nav>
+  <button class="active" onclick="go('activities',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Activities
+  </button>
+  <button onclick="go('journal',this)">
+    <!-- Book icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Journal
+  </button>
+  <button onclick="go('calendar',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendar
+  </button>
+  <button onclick="go('habits',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Habits
+  </button>
+  <button onclick="go('stats',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Stats
+  </button>
+</nav>
+
+<script>
+// ── Storage Helpers ──
+const load = k => JSON.parse(localStorage.getItem(k) || '[]');
+const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const today = () => new Date().toISOString().slice(0, 10);
+const nowTime = () => { const d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const dateStr = (d) => d.toISOString().slice(0, 10);
+const offsetDate = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return dateStr(d); };
+
+const moodEmoji = { Great:'😊', Good:'🙂', Okay:'😐', Low:'😔', Rough:'😢' };
+const moodColors = { Great:'#34d399', Good:'#38bdf8', Okay:'#fbbf24', Low:'#fb923c', Rough:'#fb7185' };
+const moodVal = { Great:5, Good:4, Okay:3, Low:2, Rough:1 };
+
+// ── Navigation ──
+function go(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pg-' + page).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (page === 'calendar') renderCalendar();
+  if (page === 'habits') renderHabits();
+  if (page === 'stats') renderStats();
+}
+
+// ── Modals ──
+function openModal(type, opts = {}) {
+  document.getElementById('modal-' + type).classList.add('show');
+  if (type === 'activity') {
+    document.getElementById('act-time').value = nowTime();
+    if (opts.duration) document.getElementById('act-dur').value = opts.duration;
+    if (opts.name) document.getElementById('act-name').value = opts.name;
+  }
+  if (type === 'journal') document.getElementById('j-time').value = nowTime();
+}
+function closeModal(e, type) { if (e.target === e.currentTarget) closeModalDirect(type); }
+function closeModalDirect(type) { document.getElementById('modal-' + type).classList.remove('show'); }
+
+// ── Feeling / Color Pickers ──
+document.querySelectorAll('.feeling-row').forEach(row => {
+  row.addEventListener('click', e => {
+    const btn = e.target.closest('.feeling-btn');
+    if (!btn) return;
+    const multi = row.id === 'act-feelings';
+    if (multi) {
+      btn.classList.toggle('selected');
+    } else {
+      row.querySelectorAll('.feeling-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+  });
+});
+
+// ══════════════════════════════════════
+// ── TIMER ──
+// ══════════════════════════════════════
+let timerTotal = 300; // seconds
+let timerRemaining = 300;
+let timerInterval = null;
+let timerState = 'idle'; // idle | running | paused | done
+const CIRCUMFERENCE = 2 * Math.PI * 72; // r=72
+
+function setPreset(min, btn) {
+  if (timerState !== 'idle') return;
+  timerTotal = min * 60;
+  timerRemaining = timerTotal;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerRemaining / 60);
+  const s = timerRemaining % 60;
+  document.getElementById('timer-display').textContent = `${m}:${String(s).padStart(2,'0')}`;
+
+  // Ring
+  const frac = timerTotal > 0 ? timerRemaining / timerTotal : 1;
+  const offset = CIRCUMFERENCE * (1 - frac);
+  const ring = document.getElementById('timer-ring');
+  ring.style.strokeDasharray = CIRCUMFERENCE;
+  ring.style.strokeDashoffset = offset;
+
+  const disp = document.getElementById('timer-display');
+  if (timerState === 'running') { disp.className = 'timer-display running'; ring.className = 'timer-ring-fill'; }
+  else if (timerState === 'done') { disp.className = 'timer-display done'; ring.className = 'timer-ring-fill done'; }
+  else { disp.className = 'timer-display'; ring.className = 'timer-ring-fill'; }
+}
+
+function timerToggle() {
+  const btn = document.getElementById('timer-main-btn');
+  const resetBtn = document.getElementById('timer-reset-btn');
+  if (timerState === 'idle' || timerState === 'paused') {
+    timerState = 'running';
+    btn.textContent = 'Pause';
+    resetBtn.style.display = 'inline-flex';
+    document.getElementById('timer-log-row').style.display = 'none';
+    timerInterval = setInterval(() => {
+      timerRemaining--;
+      updateTimerDisplay();
+      if (timerRemaining <= 0) {
+        clearInterval(timerInterval);
+        timerState = 'done';
+        timerRemaining = 0;
+        btn.textContent = 'Restart';
+        document.getElementById('timer-log-row').style.display = 'block';
+        updateTimerDisplay();
+        playBell();
+      }
+    }, 1000);
+  } else if (timerState === 'running') {
+    clearInterval(timerInterval);
+    timerState = 'paused';
+    btn.textContent = 'Resume';
+  } else if (timerState === 'done') {
+    timerReset();
+  }
+  updateTimerDisplay();
+}
+
+function timerReset() {
+  clearInterval(timerInterval);
+  timerState = 'idle';
+  timerRemaining = timerTotal;
+  document.getElementById('timer-main-btn').textContent = 'Start';
+  document.getElementById('timer-reset-btn').style.display = 'none';
+  document.getElementById('timer-log-row').style.display = 'none';
+  updateTimerDisplay();
+}
+
+function timerLog() {
+  const min = Math.round(timerTotal / 60);
+  openModal('activity', { duration: min });
+  timerReset();
+}
+
+function playBell() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[440,1],[528,0.55],[880,0.3],[1320,0.15]].forEach(([freq, amp], i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.01;
+      gain.gain.setValueAtTime(amp * 0.4, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 4);
+      osc.start(t); osc.stop(t + 4);
+    });
+  } catch(e) {}
+}
+
+// Initialize ring on load
+updateTimerDisplay();
+
+// ══════════════════════════════════════
+// ── ACTIVITIES ──
+// ══════════════════════════════════════
+function saveActivity() {
+  const name = document.getElementById('act-name').value.trim();
+  if (!name) { document.getElementById('act-name').focus(); return; }
+  const feelings = [...document.querySelectorAll('#act-feelings .feeling-btn.selected')].map(b => b.dataset.v);
+  const entry = {
+    id: uid(), type: 'activity', date: today(),
+    name, duration: parseInt(document.getElementById('act-dur').value) || 0,
+    time: document.getElementById('act-time').value,
+    feelings, notes: document.getElementById('act-notes').value.trim()
+  };
+  const list = load('activities');
+  list.unshift(entry);
+  save('activities', list);
+  document.getElementById('act-name').value = '';
+  document.getElementById('act-notes').value = '';
+  document.querySelectorAll('#act-feelings .feeling-btn').forEach(b => b.classList.remove('selected'));
+  closeModalDirect('activity');
+  renderActivities();
+}
+
+function renderActivities() {
+  const list = load('activities');
+  const el = document.getElementById('activity-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">🧘</div>No activities yet.<br>Start the timer or log manually!</div>';
+    return;
+  }
+  el.innerHTML = list.map(a => `
+    <div class="card card-sm">
+      <div class="entry">
+        <div class="entry-dot" style="background:var(--accent)"></div>
+        <div class="entry-body">
+          <div class="entry-meta">${a.date} · ${a.time || '--:--'} · ${a.duration} min</div>
+          <div class="entry-title">${esc(a.name)}</div>
+          ${a.feelings.length ? '<div style="margin-top:4px">' + a.feelings.map(f => `<span class="entry-feeling">${esc(f)}</span>`).join('') + '</div>' : ''}
+          ${a.notes ? `<div class="entry-sub" style="margin-top:6px">${esc(a.notes)}</div>` : ''}
+          <div class="entry-actions"><button class="entry-del" onclick="delActivity('${a.id}')">Delete</button></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function delActivity(id) {
+  save('activities', load('activities').filter(a => a.id !== id));
+  renderActivities();
+}
+
+// ══════════════════════════════════════
+// ── JOURNAL ──
+// ══════════════════════════════════════
+function saveJournal() {
+  const entry = {
+    id: uid(), type: 'journal', date: today(),
+    mood: document.getElementById('j-mood').value,
+    time: document.getElementById('j-time').value,
+    topics: document.getElementById('j-topics').value.trim(),
+    text: document.getElementById('j-text').value.trim()
+  };
+  const list = load('journal');
+  list.unshift(entry);
+  save('journal', list);
+  document.getElementById('j-text').value = '';
+  document.getElementById('j-topics').value = '';
+  closeModalDirect('journal');
+  renderJournal();
+}
+
+function renderJournal() {
+  const list = load('journal');
+  const el = document.getElementById('journal-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">📖</div>Your journal is empty.<br>Start writing!</div>';
+    return;
+  }
+  el.innerHTML = list.map(j => {
+    const topicTags = j.topics
+      ? j.topics.split(',').map(t => t.trim()).filter(Boolean).map(t => `<span class="entry-topic">${esc(t)}</span>`).join('')
+      : '';
+    return `
+    <div class="card card-sm">
+      <div class="entry">
+        <div class="entry-dot" style="background:var(--amber)"></div>
+        <div class="entry-body">
+          <div class="entry-meta">${j.date} · ${j.time || '--:--'} · ${moodEmoji[j.mood] || ''} ${esc(j.mood)}</div>
+          ${topicTags ? `<div style="margin-top:4px">${topicTags}</div>` : ''}
+          ${j.text
+            ? `<div class="entry-sub" style="color:var(--text);white-space:pre-wrap;margin-top:6px">${esc(j.text)}</div>`
+            : '<div class="entry-sub" style="font-style:italic;margin-top:4px">Mood check-in only</div>'
+          }
+          <div class="entry-actions"><button class="entry-del" onclick="delJournal('${j.id}')">Delete</button></div>
+        </div>
+      </div>
+    </div>
+  `}).join('');
+}
+
+function delJournal(id) {
+  save('journal', load('journal').filter(j => j.id !== id));
+  renderJournal();
+}
+
+// ══════════════════════════════════════
+// ── CALENDAR ──
+// ══════════════════════════════════════
+let calYear, calMonth, calSelected;
+function initCal() { const d = new Date(); calYear = d.getFullYear(); calMonth = d.getMonth(); calSelected = today(); }
+initCal();
+
+function renderCalendar() {
+  const first = new Date(calYear, calMonth, 1);
+  const last = new Date(calYear, calMonth + 1, 0);
+  const startDay = first.getDay();
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  const dots = {};
+  load('activities').forEach(a => { dots[a.date] = dots[a.date] || new Set(); dots[a.date].add('var(--accent)'); });
+  load('journal').forEach(j => { dots[j.date] = dots[j.date] || new Set(); dots[j.date].add('var(--amber)'); });
+  load('habitLog').forEach(l => { dots[l.date] = dots[l.date] || new Set(); dots[l.date].add('var(--green)'); });
+
+  let html = `<div class="cal-header">
+    <button class="cal-nav" onclick="calNav(-1)">&lsaquo;</button>
+    <h2>${months[calMonth]} ${calYear}</h2>
+    <button class="cal-nav" onclick="calNav(1)">&rsaquo;</button>
+  </div><div class="cal-grid">`;
+
+  ['S','M','T','W','T','F','S'].forEach(d => html += `<div class="cal-day-label">${d}</div>`);
+
+  for (let i = 0; i < startDay; i++) {
+    const d = new Date(calYear, calMonth, -startDay + i + 1);
+    html += `<div class="cal-day other-month">${d.getDate()}</div>`;
+  }
+  for (let d = 1; d <= last.getDate(); d++) {
+    const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cls = [
+      'cal-day',
+      ds === today() ? 'today' : '',
+      ds === calSelected ? 'selected' : ''
+    ].join(' ').trim();
+    const dArr = dots[ds] ? [...dots[ds]] : [];
+    const dotHtml = dArr.length ? '<div class="cal-dots">' + dArr.map(c => `<span style="background:${c}"></span>`).join('') + '</div>' : '';
+    html += `<div class="${cls}" onclick="selectDay('${ds}')">${d}${dotHtml}</div>`;
+  }
+  html += '</div>';
+  document.getElementById('calendar-card').innerHTML = html;
+  renderDayDetail();
+}
+
+function calNav(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function selectDay(ds) { calSelected = ds; renderCalendar(); }
+
+function renderDayDetail() {
+  const acts = load('activities').filter(a => a.date === calSelected);
+  const jrnls = load('journal').filter(j => j.date === calSelected);
+  const habits = load('habits');
+  const logs = load('habitLog').filter(l => l.date === calSelected);
+  const el = document.getElementById('cal-detail');
+
+  if (!acts.length && !jrnls.length && !logs.length) {
+    el.innerHTML = `<div class="card" style="margin-top:12px;text-align:center;color:var(--text2);padding:20px">Nothing logged on ${calSelected}</div>`;
+    return;
+  }
+  let html = `<div class="cal-day-detail"><h3>${calSelected}</h3>`;
+  acts.forEach(a => {
+    html += `<div class="card card-sm"><strong>${esc(a.name)}</strong> · ${a.duration} min${a.feelings.length ? ' · ' + a.feelings.join(', ') : ''}</div>`;
+  });
+  jrnls.forEach(j => {
+    const snippet = j.text ? ' — ' + esc(j.text).slice(0, 90) + (j.text.length > 90 ? '…' : '') : '';
+    html += `<div class="card card-sm">${moodEmoji[j.mood]||''} <strong>${esc(j.mood)}</strong>${snippet}</div>`;
+  });
+  if (logs.length) {
+    const names = logs.map(l => { const h = habits.find(x => x.id === l.habitId); return h ? esc(h.name) : '?'; }).join(', ');
+    html += `<div class="card card-sm"><strong>Habits:</strong> ${names}</div>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════
+// ── HABITS ──
+// ══════════════════════════════════════
+function saveHabit() {
+  const name = document.getElementById('h-name').value.trim();
+  if (!name) { document.getElementById('h-name').focus(); return; }
+  const colorBtn = document.querySelector('#h-colors .feeling-btn.selected');
+  const color = colorBtn ? colorBtn.dataset.v : '#818cf8';
+  const list = load('habits');
+  list.push({ id: uid(), name, color, createdAt: today() });
+  save('habits', list);
+  document.getElementById('h-name').value = '';
+  closeModalDirect('habit');
+  renderHabits();
+}
+
+function renderHabits() {
+  const habits = load('habits');
+  const logs = load('habitLog');
+  const el = document.getElementById('habit-list');
+  const d = today();
+  if (!habits.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">✅</div>No habits yet.<br>Create one to start tracking!</div>';
+    return;
+  }
+  const last7 = Array.from({length:7},(_,i) => offsetDate(i-6));
+  const dayLabels = ['S','M','T','W','T','F','S'];
+
+  el.innerHTML = habits.map(h => {
+    const doneToday = logs.some(l => l.habitId === h.id && l.date === d);
+    const streak = calcStreak(h.id, logs);
+    const weekDots = last7.map(dd => {
+      const done = logs.some(l => l.habitId === h.id && l.date === dd);
+      const day = dayLabels[new Date(dd + 'T12:00:00').getDay()];
+      return `<div class="habit-week-dot" style="${done ? `background:${h.color}33;color:${h.color}` : ''}">${day}</div>`;
+    }).join('');
+    return `<div class="habit-item" style="border-left:3px solid ${h.color}">
+      <button class="habit-check${doneToday ? ' done' : ''}" style="${doneToday ? `border-color:${h.color};background:${h.color}` : ''}" onclick="toggleHabit('${h.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+      </button>
+      <div class="habit-info">
+        <div class="habit-name">${esc(h.name)}</div>
+        <div class="habit-streak">${streak} day streak</div>
+        <div class="habit-week">${weekDots}</div>
+      </div>
+      <button class="habit-del" onclick="delHabit('${h.id}')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function toggleHabit(id) {
+  const logs = load('habitLog');
+  const d = today();
+  const idx = logs.findIndex(l => l.habitId === id && l.date === d);
+  if (idx >= 0) logs.splice(idx, 1);
+  else logs.push({ habitId: id, date: d });
+  save('habitLog', logs);
+  renderHabits();
+}
+
+function calcStreak(habitId, logs) {
+  const done = new Set(logs.filter(l => l.habitId === habitId).map(l => l.date));
+  let streak = 0;
+  const d = new Date();
+  if (!done.has(dateStr(d))) d.setDate(d.getDate() - 1);
+  while (done.has(dateStr(d))) { streak++; d.setDate(d.getDate() - 1); }
+  return streak;
+}
+
+function delHabit(id) {
+  save('habits', load('habits').filter(h => h.id !== id));
+  save('habitLog', load('habitLog').filter(l => l.habitId !== id));
+  renderHabits();
+}
+
+// ══════════════════════════════════════
+// ── STATS ──
+// ══════════════════════════════════════
+function renderStats() {
+  const activities = load('activities');
+  const journals = load('journal');
+  const habits = load('habits');
+  const habitLogs = load('habitLog');
+
+  // Last 7 days range
+  const last7 = Array.from({length:7}, (_,i) => offsetDate(i-6));
+  const last14 = Array.from({length:14}, (_,i) => offsetDate(i-13));
+
+  // This week vs last week minutes
+  const thisWeekMins = activities.filter(a => last7.includes(a.date)).reduce((s,a) => s+a.duration, 0);
+  const lastWeekDays = Array.from({length:7}, (_,i) => offsetDate(i-13));
+  const lastWeekMins = activities.filter(a => lastWeekDays.includes(a.date)).reduce((s,a) => s+a.duration, 0);
+  const weekDiff = lastWeekMins > 0 ? Math.round(((thisWeekMins - lastWeekMins) / lastWeekMins) * 100) : null;
+
+  // Sessions this week
+  const weekSessions = activities.filter(a => last7.includes(a.date)).length;
+
+  // Streak of any activity
+  let actStreak = 0;
+  const actDates = new Set(activities.map(a => a.date));
+  const sd = new Date();
+  if (!actDates.has(dateStr(sd))) sd.setDate(sd.getDate() - 1);
+  while (actDates.has(dateStr(sd))) { actStreak++; sd.setDate(sd.getDate() - 1); }
+
+  // Journal entries this week
+  const weekJournals = journals.filter(j => last7.includes(j.date)).length;
+
+  // Top activities by total minutes (all time)
+  const actMap = {};
+  activities.forEach(a => { actMap[a.name] = (actMap[a.name]||0) + a.duration; });
+  const topActs = Object.entries(actMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxMin = topActs[0]?.[1] || 1;
+
+  // Mood trend — last 14 days, last entry per day
+  const moodByDay = {};
+  journals.forEach(j => { moodByDay[j.date] = j.mood; }); // later entries overwrite, which is fine since list is newest-first; let's fix
+  // journals are newest-first, so first seen = latest
+  const moodByDayFinal = {};
+  [...journals].reverse().forEach(j => { moodByDayFinal[j.date] = j.mood; });
+
+  const dayLabels = ['S','M','T','W','T','F','S'];
+
+  // Build HTML
+  let html = '';
+
+  // ── Row 1: key stats ──
+  const diffLabel = weekDiff !== null
+    ? `<div class="stat-sub" style="color:${weekDiff >= 0 ? 'var(--green)' : 'var(--rose)'}">${weekDiff >= 0 ? '▲' : '▼'} ${Math.abs(weekDiff)}% vs last week</div>`
+    : '';
+
+  html += `<div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--accent)">${thisWeekMins}</div>
+      <div class="stat-label">Minutes this week</div>
+      ${diffLabel}
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--sky)">${weekSessions}</div>
+      <div class="stat-label">Sessions this week</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--amber)">${actStreak}</div>
+      <div class="stat-label">Day streak</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--green)">${weekJournals}</div>
+      <div class="stat-label">Journal entries</div>
+    </div>
+  </div>`;
+
+  // ── Mood trend ──
+  html += `<div class="card">
+    <div class="section-title">Mood — last 14 days</div>
+    <div class="mood-grid">`;
+  last14.forEach(dd => {
+    const mood = moodByDayFinal[dd];
+    const color = mood ? moodColors[mood] : 'var(--surface2)';
+    const label = new Date(dd + 'T12:00:00').getDate();
+    const title = mood ? `${dd}: ${mood}` : dd;
+    html += `<div class="mood-cell" title="${title}" style="background:${color}20;border:1.5px solid ${color}40">
+      <span style="color:${mood ? color : 'var(--border)'};font-size:10px">${label}</span>
+    </div>`;
+  });
+  html += `</div>
+    <div class="mood-legend">
+      ${Object.entries(moodColors).map(([m,c]) => `<div class="mood-legend-item"><div class="mood-legend-dot" style="background:${c}"></div>${m}</div>`).join('')}
+    </div>
+  </div>`;
+
+  // ── Top activities ──
+  if (topActs.length) {
+    html += `<div class="card"><div class="section-title">Top Activities (all time)</div>`;
+    topActs.forEach(([name, mins]) => {
+      const pct = Math.round((mins / maxMin) * 100);
+      html += `<div class="bar-row">
+        <div class="bar-label-row"><span>${esc(name)}</span><span class="bar-val">${mins} min</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── Habit overview ──
+  if (habits.length) {
+    html += `<div class="card"><div class="section-title">Habit Streaks</div>`;
+    habits.forEach(h => {
+      const streak = calcStreak(h.id, habitLogs);
+      const total = habitLogs.filter(l => l.habitId === h.id).length;
+      html += `<div class="habit-stat-row">
+        <div class="habit-stat-color" style="background:${h.color}"></div>
+        <div class="habit-stat-name">${esc(h.name)}</div>
+        <div class="habit-stat-streak">🔥 ${streak} streak · ${total} total</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── Export ──
+  html += `<div class="card">
+    <div class="section-title">Data</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Export all your data as a JSON backup file.</p>
+    <button class="btn" onclick="exportData()">Export Backup (JSON)</button>
+  </div>`;
+
+  document.getElementById('stats-content').innerHTML = html;
+}
+
+// ── Export ──
+function exportData() {
+  const data = {
+    exported: new Date().toISOString(),
+    activities: load('activities'),
+    journal: load('journal'),
+    habits: load('habits'),
+    habitLog: load('habitLog')
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mindfulness-backup-${today()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── Escape HTML ──
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ── Init ──
+renderActivities();
+renderJournal();
+
+// ── Service Worker ──
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
