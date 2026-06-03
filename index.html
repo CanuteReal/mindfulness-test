@@ -416,7 +416,8 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 <div class="modal-bg" id="modal-exercise" onclick="closeModal(event,'exercise')">
   <div class="modal" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeModalDirect('exercise')">&times;</button>
-    <h2>Log Exercise</h2>
+    <h2 id="ex-modal-title">Log Exercise</h2>
+    <input type="hidden" id="ex-edit-id">
     <div class="form-row">
       <label>Exercise name</label>
       <input id="ex-name" placeholder="e.g. Running, Bench Press, Yoga">
@@ -538,8 +539,21 @@ function openModal(type, opts = {}) {
   }
   if (type === 'journal') document.getElementById('j-time').value = nowTime();
   if (type === 'exercise') {
+    document.getElementById('ex-edit-id').value = '';
+    document.getElementById('ex-modal-title').textContent = 'Log Exercise';
     document.getElementById('ex-date').value = today();
     document.getElementById('ex-time').value = nowTime();
+    document.getElementById('ex-name').value = '';
+    document.getElementById('ex-sets').value = '';
+    document.getElementById('ex-weight').value = '';
+    document.getElementById('ex-notes').value = '';
+    document.getElementById('ex-dur').value = 30;
+    document.querySelector('#ex-cat-picker .feeling-btn.selected')?.classList.remove('selected');
+    document.querySelector('#ex-cat-picker [data-v="Cardio"]').classList.add('selected');
+    document.querySelector('#ex-intensity-picker .feeling-btn.selected')?.classList.remove('selected');
+    document.querySelector('#ex-intensity-picker [data-v="Moderate"]').classList.add('selected');
+    document.querySelector('#ex-weight-unit-picker .feeling-btn.selected')?.classList.remove('selected');
+    document.querySelector('#ex-weight-unit-picker [data-v="lbs"]').classList.add('selected');
   }
 }
 function closeModal(e, type) { if (e.target === e.currentTarget) closeModalDirect(type); }
@@ -863,8 +877,9 @@ function saveExercise() {
   if (!name) { document.getElementById('ex-name').focus(); return; }
   const catBtn = document.querySelector('#ex-cat-picker .feeling-btn.selected');
   const intBtn = document.querySelector('#ex-intensity-picker .feeling-btn.selected');
+  const editId = document.getElementById('ex-edit-id').value;
   const entry = {
-    id: uid(),
+    id: editId || uid(),
     date: document.getElementById('ex-date').value || today(),
     time: document.getElementById('ex-time').value,
     name,
@@ -876,13 +891,39 @@ function saveExercise() {
     intensity: intBtn ? intBtn.dataset.v : 'Moderate',
     notes: document.getElementById('ex-notes').value.trim()
   };
-  const list = load('exercises'); list.unshift(entry); save('exercises', list);
-  document.getElementById('ex-name').value = '';
-  document.getElementById('ex-sets').value = '';
-  document.getElementById('ex-weight').value = '';
-  document.getElementById('ex-notes').value = '';
+  let list = load('exercises');
+  if (editId) {
+    list = list.map(e => e.id === editId ? entry : e);
+  } else {
+    list.unshift(entry);
+  }
+  save('exercises', list);
   closeModalDirect('exercise');
   renderExercisePage();
+}
+
+function editExercise(id) {
+  const e = load('exercises').find(ex => ex.id === id);
+  if (!e) return;
+  document.getElementById('ex-edit-id').value = e.id;
+  document.getElementById('ex-modal-title').textContent = 'Edit Exercise';
+  document.getElementById('ex-name').value = e.name;
+  document.getElementById('ex-date').value = e.date;
+  document.getElementById('ex-time').value = e.time || '';
+  document.getElementById('ex-dur').value = e.duration;
+  document.getElementById('ex-sets').value = e.sets || '';
+  document.getElementById('ex-weight').value = e.weight || '';
+  document.getElementById('ex-notes').value = e.notes || '';
+  ['#ex-cat-picker', '#ex-intensity-picker', '#ex-weight-unit-picker'].forEach(sel => {
+    document.querySelectorAll(sel + ' .feeling-btn').forEach(b => b.classList.remove('selected'));
+  });
+  const catBtn = document.querySelector(`#ex-cat-picker [data-v="${e.category}"]`);
+  if (catBtn) catBtn.classList.add('selected');
+  const intBtn = document.querySelector(`#ex-intensity-picker [data-v="${e.intensity}"]`);
+  if (intBtn) intBtn.classList.add('selected');
+  const unitBtn = document.querySelector(`#ex-weight-unit-picker [data-v="${e.weightUnit || 'lbs'}"]`);
+  if (unitBtn) unitBtn.classList.add('selected');
+  document.getElementById('modal-exercise').classList.add('show');
 }
 
 function renderExercisePage() {
@@ -1003,7 +1044,7 @@ function renderExerciseList() {
             ${e.weight ? `<span class="entry-tag">⚖ ${esc(e.weight)} ${esc(e.weightUnit||'lbs')}</span>` : ''}
           </div>
           ${e.notes ? `<div class="entry-sub" style="margin-top:6px">${esc(e.notes)}</div>` : ''}
-          <div class="entry-actions"><button class="entry-del" onclick="delExercise('${e.id}')">Delete</button></div>
+          <div class="entry-actions"><button class="entry-del" onclick="editExercise('${e.id}')">Edit</button><button class="entry-del" onclick="delExercise('${e.id}')">Delete</button></div>
         </div>
       </div>
     </div>`;
