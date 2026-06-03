@@ -26,6 +26,12 @@
   --orange: #fb923c;
   --radius: 16px;
   --safe-b: env(safe-area-inset-bottom, 0px);
+  /* Exercise category colors */
+  --cat-cardio: #38bdf8;
+  --cat-strength: #fb7185;
+  --cat-flex: #34d399;
+  --cat-sports: #fbbf24;
+  --cat-other: #f0abfc;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -45,16 +51,22 @@ nav {
   background: var(--surface);
   border-top: 1px solid var(--surface2);
   display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
   padding-bottom: var(--safe-b);
   z-index: 100;
+  scrollbar-width: none;
 }
+nav::-webkit-scrollbar { display: none; }
 nav button {
-  flex: 1; background: none; border: none; color: var(--text2);
-  padding: 10px 0 8px; font-size: 9px; display: flex; flex-direction: column;
+  flex: 1 0 58px; background: none; border: none; color: var(--text2);
+  padding: 10px 4px 8px; font-size: 9px; display: flex; flex-direction: column;
   align-items: center; gap: 3px; cursor: pointer; transition: color .2s;
+  scroll-snap-align: start; white-space: nowrap;
 }
 nav button.active { color: var(--accent); }
-nav button svg { width: 22px; height: 22px; }
+nav button svg { width: 20px; height: 20px; flex-shrink: 0; }
 
 /* ── Pages ── */
 .page { display: none; padding: 20px 16px 24px; animation: fadeIn .25s ease; }
@@ -65,10 +77,7 @@ h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
 .subtitle { color: var(--text2); font-size: 14px; margin-bottom: 20px; }
 
 /* ── Cards ── */
-.card {
-  background: var(--surface); border-radius: var(--radius);
-  padding: 16px; margin-bottom: 12px;
-}
+.card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
 .card-sm { padding: 12px 14px; }
 
 /* ── Forms ── */
@@ -84,6 +93,7 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 
 .form-row { margin-bottom: 14px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -92,29 +102,25 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
   width: 100%; transition: background .2s, transform .1s;
 }
 .btn:active { transform: scale(.97); background: var(--accent2); }
-.btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 8px; width: auto; }
 .btn-outline { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); }
 .btn-outline:active { background: var(--accent); color: #fff; }
-.btn-green { background: var(--green); color: #0f172a; }
-.btn-green:active { background: #10b981; }
 
-/* ── Feeling Picker ── */
+/* ── Pill Pickers ── */
 .feeling-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .feeling-btn {
   padding: 8px 14px; border-radius: 20px; border: 1.5px solid var(--surface2);
-  background: transparent; color: var(--text2); font-size: 13px; cursor: pointer;
-  transition: all .2s;
+  background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; transition: all .2s;
 }
 .feeling-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(129,140,248,.12); }
 
-/* ── Activity & Journal Entries ── */
+/* ── Entries ── */
 .entry { display: flex; gap: 12px; align-items: flex-start; }
 .entry-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
 .entry-body { flex: 1; min-width: 0; }
 .entry-meta { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
 .entry-title { font-size: 15px; font-weight: 600; }
 .entry-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
-.entry-feeling { display: inline-block; font-size: 11px; background: var(--surface2); padding: 2px 8px; border-radius: 10px; margin-top: 4px; margin-right: 2px; }
+.entry-tag { display: inline-block; font-size: 11px; background: var(--surface2); padding: 2px 8px; border-radius: 10px; margin-top: 4px; margin-right: 2px; }
 .entry-topic { display: inline-block; font-size: 11px; background: rgba(56,189,248,.12); color: var(--sky); padding: 2px 8px; border-radius: 10px; margin-top: 4px; margin-right: 2px; }
 .entry-actions { display: flex; gap: 6px; margin-top: 6px; }
 .entry-del { background: none; border: none; color: var(--text2); font-size: 11px; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
@@ -122,36 +128,25 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 
 /* ── Timer ── */
 .timer-card { background: var(--surface); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; text-align: center; }
-.timer-display {
-  font-size: 64px; font-weight: 200; letter-spacing: -2px; margin: 8px 0;
-  font-variant-numeric: tabular-nums; line-height: 1;
-  transition: color .3s;
-}
+.timer-display { font-size: 64px; font-weight: 200; letter-spacing: -2px; margin: 8px 0; font-variant-numeric: tabular-nums; line-height: 1; transition: color .3s; }
 .timer-display.running { color: var(--accent); }
 .timer-display.done { color: var(--green); }
 .timer-presets { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
-.preset-btn {
-  padding: 6px 12px; border-radius: 16px; border: 1.5px solid var(--surface2);
-  background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; transition: all .2s;
-}
+.preset-btn { padding: 6px 12px; border-radius: 16px; border: 1.5px solid var(--surface2); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; transition: all .2s; }
 .preset-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(129,140,248,.12); }
 .timer-controls { display: flex; gap: 10px; justify-content: center; }
-.timer-btn {
-  padding: 12px 28px; border-radius: 50px; border: none; font-size: 15px;
-  font-weight: 600; cursor: pointer; transition: all .2s; font-family: inherit;
-}
+.timer-btn { padding: 12px 28px; border-radius: 50px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: all .2s; font-family: inherit; }
 .timer-btn-primary { background: var(--accent); color: #fff; }
 .timer-btn-primary:active { background: var(--accent2); transform: scale(.97); }
 .timer-btn-secondary { background: var(--surface2); color: var(--text2); }
-.timer-btn-secondary:active { opacity: .7; }
 .timer-btn-log { background: var(--green); color: #0f172a; }
 .timer-btn-log:active { background: #10b981; transform: scale(.97); }
-.timer-progress-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; margin: 4px 0; }
 .timer-ring-svg { transform: rotate(-90deg); }
 .timer-ring-bg { fill: none; stroke: var(--surface2); stroke-width: 4; }
 .timer-ring-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset .9s linear, stroke .3s; }
 .timer-ring-fill.done { stroke: var(--green); }
 .timer-inner { position: absolute; }
+.timer-progress-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; margin: 4px 0; }
 
 /* ── Calendar ── */
 .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
@@ -159,30 +154,19 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 .cal-nav { background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; padding: 4px 10px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
 .cal-day-label { font-size: 11px; color: var(--text2); padding: 4px 0; font-weight: 600; }
-.cal-day {
-  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; border-radius: 12px; font-size: 14px; cursor: pointer;
-  position: relative; transition: background .15s;
-}
+.cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; font-size: 14px; cursor: pointer; position: relative; transition: background .15s; }
 .cal-day:hover { background: var(--surface2); }
 .cal-day.today { outline: 2px solid var(--accent); outline-offset: -2px; }
 .cal-day.selected { background: var(--accent); color: #fff; }
 .cal-day.other-month { color: var(--surface2); }
-.cal-dots { display: flex; gap: 2px; position: absolute; bottom: 4px; }
+.cal-dots { display: flex; gap: 2px; position: absolute; bottom: 3px; }
 .cal-dots span { width: 4px; height: 4px; border-radius: 50%; }
 .cal-day-detail { margin-top: 16px; }
 .cal-day-detail h3 { font-size: 15px; margin-bottom: 10px; color: var(--text2); }
 
 /* ── Habits ── */
-.habit-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px; background: var(--surface); border-radius: var(--radius); margin-bottom: 8px;
-}
-.habit-check {
-  width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface2);
-  background: none; cursor: pointer; display: flex; align-items: center;
-  justify-content: center; flex-shrink: 0; transition: all .2s; color: transparent;
-}
+.habit-item { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--surface); border-radius: var(--radius); margin-bottom: 8px; }
+.habit-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface2); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; color: transparent; }
 .habit-check.done { border-color: var(--green); background: var(--green); color: #fff; }
 .habit-check svg { width: 16px; height: 16px; }
 .habit-info { flex: 1; min-width: 0; }
@@ -191,10 +175,7 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 .habit-del { background: none; border: none; color: var(--text2); cursor: pointer; padding: 4px; border-radius: 6px; }
 .habit-del:hover { color: var(--rose); }
 .habit-week { display: flex; gap: 4px; margin-top: 6px; }
-.habit-week-dot {
-  width: 18px; height: 18px; border-radius: 4px; background: var(--surface2);
-  font-size: 9px; display: flex; align-items: center; justify-content: center; color: var(--text2);
-}
+.habit-week-dot { width: 18px; height: 18px; border-radius: 4px; background: var(--surface2); font-size: 9px; display: flex; align-items: center; justify-content: center; color: var(--text2); }
 
 /* ── Stats ── */
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
@@ -204,47 +185,53 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 .stat-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
 .section-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
 .mood-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 6px; }
-.mood-cell {
-  aspect-ratio: 1; border-radius: 5px; display: flex; align-items: center;
-  justify-content: center; font-size: 9px; color: var(--text2); cursor: default;
-}
-.mood-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
-.mood-legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text2); }
-.mood-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+.mood-cell { aspect-ratio: 1; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 9px; }
 .bar-row { margin-bottom: 10px; }
 .bar-label-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
 .bar-val { color: var(--text2); font-size: 12px; }
 .bar-track { background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
-.bar-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width .6s ease; }
-.export-row { display: flex; gap: 10px; margin-top: 4px; }
+.bar-fill { height: 100%; border-radius: 4px; background: var(--accent); }
 .habit-stat-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--surface2); }
 .habit-stat-row:last-child { border-bottom: none; }
-.habit-stat-color { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.habit-stat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .habit-stat-name { flex: 1; font-size: 14px; }
 .habit-stat-streak { font-size: 13px; color: var(--text2); }
+
+/* ── Exercise Chart ── */
+.ex-summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.ex-summary-box { background: var(--surface); border-radius: 12px; padding: 12px; text-align: center; }
+.ex-summary-num { font-size: 26px; font-weight: 700; line-height: 1.1; }
+.ex-summary-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.chart-outer { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.chart-bars-wrap { display: flex; align-items: flex-end; gap: 5px; height: 150px; }
+.chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0; }
+.chart-bar-stack { width: 100%; display: flex; flex-direction: column-reverse; border-radius: 5px 5px 0 0; overflow: hidden; min-height: 3px; flex-grow: 0; }
+.chart-bar-seg { width: 100%; }
+.chart-bar-empty { width: 100%; background: var(--surface2); border-radius: 5px 5px 0 0; min-height: 3px; }
+.chart-label { font-size: 9px; color: var(--text2); margin-top: 5px; white-space: nowrap; }
+.chart-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.chart-legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text2); }
+.chart-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.ex-cat-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.ex-cat-btn { padding: 6px 12px; border-radius: 16px; border: 1.5px solid var(--surface2); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; transition: all .2s; }
+.ex-cat-btn.active { color: #0f172a; }
+
+/* ── Intensity badge ── */
+.intensity-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-top: 4px; margin-right: 2px; }
+.intensity-Easy { background: rgba(52,211,153,.15); color: var(--green); }
+.intensity-Moderate { background: rgba(251,191,36,.15); color: var(--amber); }
+.intensity-Hard { background: rgba(251,113,133,.15); color: var(--rose); }
 
 /* ── Empty & Modal ── */
 .empty-state { text-align: center; color: var(--text2); padding: 40px 20px; font-size: 14px; line-height: 1.6; }
 .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
 
-.modal-bg {
-  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
-  z-index: 200; align-items: flex-end; justify-content: center;
-  backdrop-filter: blur(4px);
-}
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
 .modal-bg.show { display: flex; }
-.modal {
-  background: var(--surface); border-radius: 24px 24px 0 0; width: 100%;
-  max-width: 500px; max-height: 88dvh; overflow-y: auto;
-  padding: 24px 20px calc(20px + var(--safe-b));
-  animation: slideUp .3s ease;
-}
+.modal { background: var(--surface); border-radius: 24px 24px 0 0; width: 100%; max-width: 500px; max-height: 88dvh; overflow-y: auto; padding: 24px 20px calc(20px + var(--safe-b)); animation: slideUp .3s ease; }
 @keyframes slideUp { from { transform: translateY(100%); } }
 .modal h2 { font-size: 20px; margin-bottom: 18px; }
-.modal-close {
-  float: right; background: var(--surface2); border: none; color: var(--text);
-  width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px;
-}
+.modal-close { float: right; background: var(--surface2); border: none; color: var(--text); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
@@ -256,8 +243,6 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 <div id="pg-activities" class="page active">
   <h1>Activities</h1>
   <p class="subtitle">Log your mindful moments</p>
-
-  <!-- Timer Card -->
   <div class="timer-card">
     <div class="timer-presets">
       <button class="preset-btn active" onclick="setPreset(5,this)">5m</button>
@@ -275,7 +260,7 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
         <div class="timer-display" id="timer-display">5:00</div>
       </div>
     </div>
-    <div class="timer-controls" id="timer-controls">
+    <div class="timer-controls">
       <button class="timer-btn timer-btn-primary" id="timer-main-btn" onclick="timerToggle()">Start</button>
       <button class="timer-btn timer-btn-secondary" id="timer-reset-btn" onclick="timerReset()" style="display:none">Reset</button>
     </div>
@@ -283,7 +268,6 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
       <button class="timer-btn timer-btn-log" onclick="timerLog()" style="width:100%;padding:12px">Log this session</button>
     </div>
   </div>
-
   <button class="btn btn-outline" onclick="openModal('activity')">+ Log manually</button>
   <div id="activity-list" style="margin-top:16px"></div>
 </div>
@@ -301,6 +285,12 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
   <h1>Calendar</h1>
   <p class="subtitle">Your mindfulness at a glance</p>
   <div class="card" id="calendar-card"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:0 2px">
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span>Activity</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block"></span>Journal</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Habit</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--orange);display:inline-block"></span>Exercise</div>
+  </div>
   <div id="cal-detail"></div>
 </div>
 
@@ -310,6 +300,21 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
   <p class="subtitle">Build consistency</p>
   <button class="btn" onclick="openModal('habit')" style="margin-bottom:16px">+ New Habit</button>
   <div id="habit-list"></div>
+</div>
+
+<!-- ══════════ Exercise Page ══════════ -->
+<div id="pg-exercise" class="page">
+  <h1>Exercise</h1>
+  <p class="subtitle">Track your weekly training</p>
+  <div class="ex-summary-grid" id="ex-summary"></div>
+  <div class="chart-outer">
+    <div class="section-title">Volume — last 8 weeks</div>
+    <div class="chart-bars-wrap" id="ex-chart-bars"></div>
+    <div class="chart-legend" id="ex-chart-legend"></div>
+  </div>
+  <div class="ex-cat-filter" id="ex-filter"></div>
+  <button class="btn" onclick="openModal('exercise')" style="margin-bottom:14px">+ Log Exercise</button>
+  <div id="exercise-list"></div>
 </div>
 
 <!-- ══════════ Stats Page ══════════ -->
@@ -329,14 +334,8 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
       <input id="act-name" placeholder="e.g. Meditation, Yoga, Breathwork">
     </div>
     <div class="form-row form-grid">
-      <div>
-        <label>Duration (min)</label>
-        <input id="act-dur" type="number" min="1" value="10">
-      </div>
-      <div>
-        <label>Time</label>
-        <input id="act-time" type="time">
-      </div>
+      <div><label>Duration (min)</label><input id="act-dur" type="number" min="1" value="10"></div>
+      <div><label>Time</label><input id="act-time" type="time"></div>
     </div>
     <div class="form-row">
       <label>How did it feel?</label>
@@ -375,10 +374,7 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
           <option value="Rough">😢 Rough</option>
         </select>
       </div>
-      <div>
-        <label>Time</label>
-        <input id="j-time" type="time">
-      </div>
+      <div><label>Time</label><input id="j-time" type="time"></div>
     </div>
     <div class="form-row">
       <label>Topics (optional)</label>
@@ -416,14 +412,56 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
   </div>
 </div>
 
+<!-- ══════════ Exercise Modal ══════════ -->
+<div class="modal-bg" id="modal-exercise" onclick="closeModal(event,'exercise')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModalDirect('exercise')">&times;</button>
+    <h2>Log Exercise</h2>
+    <div class="form-row">
+      <label>Exercise name</label>
+      <input id="ex-name" placeholder="e.g. Running, Bench Press, Yoga">
+    </div>
+    <div class="form-row">
+      <label>Category</label>
+      <div class="feeling-row" id="ex-cat-picker">
+        <button class="feeling-btn selected" data-v="Cardio">Cardio</button>
+        <button class="feeling-btn" data-v="Strength">Strength</button>
+        <button class="feeling-btn" data-v="Flexibility">Flexibility</button>
+        <button class="feeling-btn" data-v="Sports">Sports</button>
+        <button class="feeling-btn" data-v="Other">Other</button>
+      </div>
+    </div>
+    <div class="form-row form-grid">
+      <div><label>Duration (min)</label><input id="ex-dur" type="number" min="1" value="30"></div>
+      <div><label>Sets / Reps (opt.)</label><input id="ex-sets" placeholder="e.g. 3×10"></div>
+    </div>
+    <div class="form-row">
+      <label>Intensity</label>
+      <div class="feeling-row" id="ex-intensity-picker">
+        <button class="feeling-btn" data-v="Easy">Easy</button>
+        <button class="feeling-btn selected" data-v="Moderate">Moderate</button>
+        <button class="feeling-btn" data-v="Hard">Hard</button>
+      </div>
+    </div>
+    <div class="form-row form-grid">
+      <div><label>Date</label><input id="ex-date" type="date"></div>
+      <div><label>Time</label><input id="ex-time" type="time"></div>
+    </div>
+    <div class="form-row">
+      <label>Notes (optional)</label>
+      <textarea id="ex-notes" rows="2" placeholder="How did it go?"></textarea>
+    </div>
+    <button class="btn" onclick="saveExercise()">Save Exercise</button>
+  </div>
+</div>
+
 <!-- ══════════ Nav ══════════ -->
-<nav>
+<nav id="main-nav">
   <button class="active" onclick="go('activities',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     Activities
   </button>
   <button onclick="go('journal',this)">
-    <!-- Book icon -->
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     Journal
   </button>
@@ -435,6 +473,10 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     Habits
   </button>
+  <button onclick="go('exercise',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3 9.5h2v5H3z"/><path d="M19 9.5h2v5h-2z"/><path d="M1 11.5h2"/><path d="M21 11.5h2"/></svg>
+    Exercise
+  </button>
   <button onclick="go('stats',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Stats
@@ -442,20 +484,28 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 </nav>
 
 <script>
-// ── Storage Helpers ──
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// HELPERS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const load = k => JSON.parse(localStorage.getItem(k) || '[]');
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const today = () => new Date().toISOString().slice(0, 10);
 const nowTime = () => { const d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-const dateStr = (d) => d.toISOString().slice(0, 10);
-const offsetDate = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return dateStr(d); };
+const dateStr = d => d.toISOString().slice(0, 10);
+const offsetDate = n => { const d = new Date(); d.setDate(d.getDate() + n); return dateStr(d); };
 
 const moodEmoji = { Great:'😊', Good:'🙂', Okay:'😐', Low:'😔', Rough:'😢' };
 const moodColors = { Great:'#34d399', Good:'#38bdf8', Okay:'#fbbf24', Low:'#fb923c', Rough:'#fb7185' };
-const moodVal = { Great:5, Good:4, Okay:3, Low:2, Rough:1 };
 
-// ── Navigation ──
+const CAT_COLORS = { Cardio:'#38bdf8', Strength:'#fb7185', Flexibility:'#34d399', Sports:'#fbbf24', Other:'#f0abfc' };
+const CATS = Object.keys(CAT_COLORS);
+
+let exFilterCat = 'All';
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// NAVIGATION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function go(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('pg-' + page).classList.add('active');
@@ -463,23 +513,30 @@ function go(page, btn) {
   btn.classList.add('active');
   if (page === 'calendar') renderCalendar();
   if (page === 'habits') renderHabits();
+  if (page === 'exercise') renderExercisePage();
   if (page === 'stats') renderStats();
 }
 
-// ── Modals ──
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MODALS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function openModal(type, opts = {}) {
   document.getElementById('modal-' + type).classList.add('show');
   if (type === 'activity') {
     document.getElementById('act-time').value = nowTime();
     if (opts.duration) document.getElementById('act-dur').value = opts.duration;
-    if (opts.name) document.getElementById('act-name').value = opts.name;
+    if (opts.name)     document.getElementById('act-name').value = opts.name;
   }
   if (type === 'journal') document.getElementById('j-time').value = nowTime();
+  if (type === 'exercise') {
+    document.getElementById('ex-date').value = today();
+    document.getElementById('ex-time').value = nowTime();
+  }
 }
 function closeModal(e, type) { if (e.target === e.currentTarget) closeModalDirect(type); }
 function closeModalDirect(type) { document.getElementById('modal-' + type).classList.remove('show'); }
 
-// ── Feeling / Color Pickers ──
+// ── Single-select pill listeners ──
 document.querySelectorAll('.feeling-row').forEach(row => {
   row.addEventListener('click', e => {
     const btn = e.target.closest('.feeling-btn');
@@ -494,36 +551,27 @@ document.querySelectorAll('.feeling-row').forEach(row => {
   });
 });
 
-// ══════════════════════════════════════
-// ── TIMER ──
-// ══════════════════════════════════════
-let timerTotal = 300; // seconds
-let timerRemaining = 300;
-let timerInterval = null;
-let timerState = 'idle'; // idle | running | paused | done
-const CIRCUMFERENCE = 2 * Math.PI * 72; // r=72
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TIMER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let timerTotal = 300, timerRemaining = 300, timerInterval = null, timerState = 'idle';
+const CIRCUMFERENCE = 2 * Math.PI * 72;
 
 function setPreset(min, btn) {
   if (timerState !== 'idle') return;
-  timerTotal = min * 60;
-  timerRemaining = timerTotal;
+  timerTotal = min * 60; timerRemaining = timerTotal;
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   updateTimerDisplay();
 }
 
 function updateTimerDisplay() {
-  const m = Math.floor(timerRemaining / 60);
-  const s = timerRemaining % 60;
+  const m = Math.floor(timerRemaining / 60), s = timerRemaining % 60;
   document.getElementById('timer-display').textContent = `${m}:${String(s).padStart(2,'0')}`;
-
-  // Ring
   const frac = timerTotal > 0 ? timerRemaining / timerTotal : 1;
-  const offset = CIRCUMFERENCE * (1 - frac);
   const ring = document.getElementById('timer-ring');
   ring.style.strokeDasharray = CIRCUMFERENCE;
-  ring.style.strokeDashoffset = offset;
-
+  ring.style.strokeDashoffset = CIRCUMFERENCE * (1 - frac);
   const disp = document.getElementById('timer-display');
   if (timerState === 'running') { disp.className = 'timer-display running'; ring.className = 'timer-ring-fill'; }
   else if (timerState === 'done') { disp.className = 'timer-display done'; ring.className = 'timer-ring-fill done'; }
@@ -534,37 +582,25 @@ function timerToggle() {
   const btn = document.getElementById('timer-main-btn');
   const resetBtn = document.getElementById('timer-reset-btn');
   if (timerState === 'idle' || timerState === 'paused') {
-    timerState = 'running';
-    btn.textContent = 'Pause';
-    resetBtn.style.display = 'inline-flex';
+    timerState = 'running'; btn.textContent = 'Pause'; resetBtn.style.display = 'inline-flex';
     document.getElementById('timer-log-row').style.display = 'none';
     timerInterval = setInterval(() => {
       timerRemaining--;
       updateTimerDisplay();
       if (timerRemaining <= 0) {
-        clearInterval(timerInterval);
-        timerState = 'done';
-        timerRemaining = 0;
-        btn.textContent = 'Restart';
-        document.getElementById('timer-log-row').style.display = 'block';
-        updateTimerDisplay();
-        playBell();
+        clearInterval(timerInterval); timerState = 'done'; timerRemaining = 0;
+        btn.textContent = 'Restart'; document.getElementById('timer-log-row').style.display = 'block';
+        updateTimerDisplay(); playBell();
       }
     }, 1000);
   } else if (timerState === 'running') {
-    clearInterval(timerInterval);
-    timerState = 'paused';
-    btn.textContent = 'Resume';
-  } else if (timerState === 'done') {
-    timerReset();
-  }
+    clearInterval(timerInterval); timerState = 'paused'; btn.textContent = 'Resume';
+  } else if (timerState === 'done') { timerReset(); }
   updateTimerDisplay();
 }
 
 function timerReset() {
-  clearInterval(timerInterval);
-  timerState = 'idle';
-  timerRemaining = timerTotal;
+  clearInterval(timerInterval); timerState = 'idle'; timerRemaining = timerTotal;
   document.getElementById('timer-main-btn').textContent = 'Start';
   document.getElementById('timer-reset-btn').style.display = 'none';
   document.getElementById('timer-log-row').style.display = 'none';
@@ -572,17 +608,15 @@ function timerReset() {
 }
 
 function timerLog() {
-  const min = Math.round(timerTotal / 60);
-  openModal('activity', { duration: min });
+  openModal('activity', { duration: Math.round(timerTotal / 60) });
   timerReset();
 }
 
 function playBell() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [[440,1],[528,0.55],[880,0.3],[1320,0.15]].forEach(([freq, amp], i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+    [[440,1],[528,.55],[880,.3],[1320,.15]].forEach(([freq,amp],i) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine'; osc.frequency.value = freq;
       const t = ctx.currentTime + i * 0.01;
@@ -592,154 +626,120 @@ function playBell() {
     });
   } catch(e) {}
 }
-
-// Initialize ring on load
 updateTimerDisplay();
 
-// ══════════════════════════════════════
-// ── ACTIVITIES ──
-// ══════════════════════════════════════
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ACTIVITIES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function saveActivity() {
   const name = document.getElementById('act-name').value.trim();
   if (!name) { document.getElementById('act-name').focus(); return; }
   const feelings = [...document.querySelectorAll('#act-feelings .feeling-btn.selected')].map(b => b.dataset.v);
   const entry = {
-    id: uid(), type: 'activity', date: today(),
-    name, duration: parseInt(document.getElementById('act-dur').value) || 0,
+    id: uid(), date: today(), name,
+    duration: parseInt(document.getElementById('act-dur').value) || 0,
     time: document.getElementById('act-time').value,
     feelings, notes: document.getElementById('act-notes').value.trim()
   };
-  const list = load('activities');
-  list.unshift(entry);
-  save('activities', list);
+  const list = load('activities'); list.unshift(entry); save('activities', list);
   document.getElementById('act-name').value = '';
   document.getElementById('act-notes').value = '';
   document.querySelectorAll('#act-feelings .feeling-btn').forEach(b => b.classList.remove('selected'));
-  closeModalDirect('activity');
-  renderActivities();
+  closeModalDirect('activity'); renderActivities();
 }
 
 function renderActivities() {
   const list = load('activities');
   const el = document.getElementById('activity-list');
-  if (!list.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">🧘</div>No activities yet.<br>Start the timer or log manually!</div>';
-    return;
-  }
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🧘</div>No activities yet.<br>Start the timer or log manually!</div>'; return; }
   el.innerHTML = list.map(a => `
     <div class="card card-sm">
       <div class="entry">
         <div class="entry-dot" style="background:var(--accent)"></div>
         <div class="entry-body">
-          <div class="entry-meta">${a.date} · ${a.time || '--:--'} · ${a.duration} min</div>
+          <div class="entry-meta">${a.date} · ${a.time||'--:--'} · ${a.duration} min</div>
           <div class="entry-title">${esc(a.name)}</div>
-          ${a.feelings.length ? '<div style="margin-top:4px">' + a.feelings.map(f => `<span class="entry-feeling">${esc(f)}</span>`).join('') + '</div>' : ''}
+          ${a.feelings.length ? '<div style="margin-top:4px">'+a.feelings.map(f=>`<span class="entry-tag">${esc(f)}</span>`).join('')+'</div>' : ''}
           ${a.notes ? `<div class="entry-sub" style="margin-top:6px">${esc(a.notes)}</div>` : ''}
           <div class="entry-actions"><button class="entry-del" onclick="delActivity('${a.id}')">Delete</button></div>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
+function delActivity(id) { save('activities', load('activities').filter(a => a.id !== id)); renderActivities(); }
 
-function delActivity(id) {
-  save('activities', load('activities').filter(a => a.id !== id));
-  renderActivities();
-}
-
-// ══════════════════════════════════════
-// ── JOURNAL ──
-// ══════════════════════════════════════
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// JOURNAL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function saveJournal() {
   const entry = {
-    id: uid(), type: 'journal', date: today(),
+    id: uid(), date: today(),
     mood: document.getElementById('j-mood').value,
     time: document.getElementById('j-time').value,
     topics: document.getElementById('j-topics').value.trim(),
     text: document.getElementById('j-text').value.trim()
   };
-  const list = load('journal');
-  list.unshift(entry);
-  save('journal', list);
+  const list = load('journal'); list.unshift(entry); save('journal', list);
   document.getElementById('j-text').value = '';
   document.getElementById('j-topics').value = '';
-  closeModalDirect('journal');
-  renderJournal();
+  closeModalDirect('journal'); renderJournal();
 }
 
 function renderJournal() {
   const list = load('journal');
   const el = document.getElementById('journal-list');
-  if (!list.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">📖</div>Your journal is empty.<br>Start writing!</div>';
-    return;
-  }
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📖</div>Your journal is empty.<br>Start writing!</div>'; return; }
   el.innerHTML = list.map(j => {
-    const topicTags = j.topics
-      ? j.topics.split(',').map(t => t.trim()).filter(Boolean).map(t => `<span class="entry-topic">${esc(t)}</span>`).join('')
-      : '';
-    return `
-    <div class="card card-sm">
+    const topicTags = j.topics ? j.topics.split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="entry-topic">${esc(t)}</span>`).join('') : '';
+    return `<div class="card card-sm">
       <div class="entry">
         <div class="entry-dot" style="background:var(--amber)"></div>
         <div class="entry-body">
-          <div class="entry-meta">${j.date} · ${j.time || '--:--'} · ${moodEmoji[j.mood] || ''} ${esc(j.mood)}</div>
+          <div class="entry-meta">${j.date} · ${j.time||'--:--'} · ${moodEmoji[j.mood]||''} ${esc(j.mood)}</div>
           ${topicTags ? `<div style="margin-top:4px">${topicTags}</div>` : ''}
-          ${j.text
-            ? `<div class="entry-sub" style="color:var(--text);white-space:pre-wrap;margin-top:6px">${esc(j.text)}</div>`
-            : '<div class="entry-sub" style="font-style:italic;margin-top:4px">Mood check-in only</div>'
-          }
+          ${j.text ? `<div class="entry-sub" style="color:var(--text);white-space:pre-wrap;margin-top:6px">${esc(j.text)}</div>` : '<div class="entry-sub" style="font-style:italic;margin-top:4px">Mood check-in only</div>'}
           <div class="entry-actions"><button class="entry-del" onclick="delJournal('${j.id}')">Delete</button></div>
         </div>
       </div>
-    </div>
-  `}).join('');
+    </div>`;
+  }).join('');
 }
+function delJournal(id) { save('journal', load('journal').filter(j => j.id !== id)); renderJournal(); }
 
-function delJournal(id) {
-  save('journal', load('journal').filter(j => j.id !== id));
-  renderJournal();
-}
-
-// ══════════════════════════════════════
-// ── CALENDAR ──
-// ══════════════════════════════════════
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CALENDAR
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let calYear, calMonth, calSelected;
 function initCal() { const d = new Date(); calYear = d.getFullYear(); calMonth = d.getMonth(); calSelected = today(); }
 initCal();
 
 function renderCalendar() {
   const first = new Date(calYear, calMonth, 1);
-  const last = new Date(calYear, calMonth + 1, 0);
+  const last  = new Date(calYear, calMonth + 1, 0);
   const startDay = first.getDay();
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   const dots = {};
-  load('activities').forEach(a => { dots[a.date] = dots[a.date] || new Set(); dots[a.date].add('var(--accent)'); });
-  load('journal').forEach(j => { dots[j.date] = dots[j.date] || new Set(); dots[j.date].add('var(--amber)'); });
-  load('habitLog').forEach(l => { dots[l.date] = dots[l.date] || new Set(); dots[l.date].add('var(--green)'); });
+  const addDot = (date, color) => { dots[date] = dots[date] || new Set(); dots[date].add(color); };
+  load('activities').forEach(a => addDot(a.date, 'var(--accent)'));
+  load('journal').forEach(j => addDot(j.date, 'var(--amber)'));
+  load('habitLog').forEach(l => addDot(l.date, 'var(--green)'));
+  load('exercises').forEach(e => addDot(e.date, 'var(--orange)'));
 
   let html = `<div class="cal-header">
     <button class="cal-nav" onclick="calNav(-1)">&lsaquo;</button>
     <h2>${months[calMonth]} ${calYear}</h2>
     <button class="cal-nav" onclick="calNav(1)">&rsaquo;</button>
   </div><div class="cal-grid">`;
-
   ['S','M','T','W','T','F','S'].forEach(d => html += `<div class="cal-day-label">${d}</div>`);
-
   for (let i = 0; i < startDay; i++) {
-    const d = new Date(calYear, calMonth, -startDay + i + 1);
-    html += `<div class="cal-day other-month">${d.getDate()}</div>`;
+    html += `<div class="cal-day other-month">${new Date(calYear, calMonth, -startDay+i+1).getDate()}</div>`;
   }
   for (let d = 1; d <= last.getDate(); d++) {
     const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const cls = [
-      'cal-day',
-      ds === today() ? 'today' : '',
-      ds === calSelected ? 'selected' : ''
-    ].join(' ').trim();
+    const cls = ['cal-day', ds===today()?'today':'', ds===calSelected?'selected':''].filter(Boolean).join(' ');
     const dArr = dots[ds] ? [...dots[ds]] : [];
-    const dotHtml = dArr.length ? '<div class="cal-dots">' + dArr.map(c => `<span style="background:${c}"></span>`).join('') + '</div>' : '';
+    const dotHtml = dArr.length ? '<div class="cal-dots">'+dArr.map(c=>`<span style="background:${c}"></span>`).join('')+'</div>' : '';
     html += `<div class="${cls}" onclick="selectDay('${ds}')">${d}${dotHtml}</div>`;
   }
   html += '</div>';
@@ -753,74 +753,66 @@ function calNav(dir) {
   if (calMonth > 11) { calMonth = 0; calYear++; }
   renderCalendar();
 }
-
 function selectDay(ds) { calSelected = ds; renderCalendar(); }
 
 function renderDayDetail() {
-  const acts = load('activities').filter(a => a.date === calSelected);
+  const acts  = load('activities').filter(a => a.date === calSelected);
   const jrnls = load('journal').filter(j => j.date === calSelected);
+  const exs   = load('exercises').filter(e => e.date === calSelected);
   const habits = load('habits');
-  const logs = load('habitLog').filter(l => l.date === calSelected);
+  const logs  = load('habitLog').filter(l => l.date === calSelected);
   const el = document.getElementById('cal-detail');
-
-  if (!acts.length && !jrnls.length && !logs.length) {
+  if (!acts.length && !jrnls.length && !exs.length && !logs.length) {
     el.innerHTML = `<div class="card" style="margin-top:12px;text-align:center;color:var(--text2);padding:20px">Nothing logged on ${calSelected}</div>`;
     return;
   }
   let html = `<div class="cal-day-detail"><h3>${calSelected}</h3>`;
-  acts.forEach(a => {
-    html += `<div class="card card-sm"><strong>${esc(a.name)}</strong> · ${a.duration} min${a.feelings.length ? ' · ' + a.feelings.join(', ') : ''}</div>`;
-  });
+  acts.forEach(a => { html += `<div class="card card-sm"><strong>${esc(a.name)}</strong> · ${a.duration} min${a.feelings.length?' · '+a.feelings.join(', '):''}</div>`; });
   jrnls.forEach(j => {
-    const snippet = j.text ? ' — ' + esc(j.text).slice(0, 90) + (j.text.length > 90 ? '…' : '') : '';
+    const snippet = j.text ? ' — '+esc(j.text).slice(0,90)+(j.text.length>90?'…':'') : '';
     html += `<div class="card card-sm">${moodEmoji[j.mood]||''} <strong>${esc(j.mood)}</strong>${snippet}</div>`;
   });
+  exs.forEach(e => {
+    const dot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CAT_COLORS[e.category]};margin-right:5px"></span>`;
+    html += `<div class="card card-sm">${dot}<strong>${esc(e.name)}</strong> · ${e.duration} min · ${esc(e.category)}${e.sets?' · '+esc(e.sets):''}</div>`;
+  });
   if (logs.length) {
-    const names = logs.map(l => { const h = habits.find(x => x.id === l.habitId); return h ? esc(h.name) : '?'; }).join(', ');
-    html += `<div class="card card-sm"><strong>Habits:</strong> ${names}</div>`;
+    html += `<div class="card card-sm"><strong>Habits:</strong> ${logs.map(l=>{const h=habits.find(x=>x.id===l.habitId);return h?esc(h.name):'?';}).join(', ')}</div>`;
   }
   html += '</div>';
   el.innerHTML = html;
 }
 
-// ══════════════════════════════════════
-// ── HABITS ──
-// ══════════════════════════════════════
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// HABITS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function saveHabit() {
   const name = document.getElementById('h-name').value.trim();
   if (!name) { document.getElementById('h-name').focus(); return; }
   const colorBtn = document.querySelector('#h-colors .feeling-btn.selected');
   const color = colorBtn ? colorBtn.dataset.v : '#818cf8';
-  const list = load('habits');
-  list.push({ id: uid(), name, color, createdAt: today() });
-  save('habits', list);
+  const list = load('habits'); list.push({ id: uid(), name, color, createdAt: today() }); save('habits', list);
   document.getElementById('h-name').value = '';
-  closeModalDirect('habit');
-  renderHabits();
+  closeModalDirect('habit'); renderHabits();
 }
 
 function renderHabits() {
-  const habits = load('habits');
-  const logs = load('habitLog');
+  const habits = load('habits'), logs = load('habitLog');
   const el = document.getElementById('habit-list');
   const d = today();
-  if (!habits.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">✅</div>No habits yet.<br>Create one to start tracking!</div>';
-    return;
-  }
-  const last7 = Array.from({length:7},(_,i) => offsetDate(i-6));
+  if (!habits.length) { el.innerHTML = '<div class="empty-state"><div class="icon">✅</div>No habits yet.<br>Create one to start tracking!</div>'; return; }
+  const last7 = Array.from({length:7},(_,i)=>offsetDate(i-6));
   const dayLabels = ['S','M','T','W','T','F','S'];
-
   el.innerHTML = habits.map(h => {
     const doneToday = logs.some(l => l.habitId === h.id && l.date === d);
     const streak = calcStreak(h.id, logs);
     const weekDots = last7.map(dd => {
       const done = logs.some(l => l.habitId === h.id && l.date === dd);
-      const day = dayLabels[new Date(dd + 'T12:00:00').getDay()];
-      return `<div class="habit-week-dot" style="${done ? `background:${h.color}33;color:${h.color}` : ''}">${day}</div>`;
+      const day = dayLabels[new Date(dd+'T12:00:00').getDay()];
+      return `<div class="habit-week-dot" style="${done?`background:${h.color}33;color:${h.color}`:''}">${day}</div>`;
     }).join('');
     return `<div class="habit-item" style="border-left:3px solid ${h.color}">
-      <button class="habit-check${doneToday ? ' done' : ''}" style="${doneToday ? `border-color:${h.color};background:${h.color}` : ''}" onclick="toggleHabit('${h.id}')">
+      <button class="habit-check${doneToday?' done':''}" style="${doneToday?`border-color:${h.color};background:${h.color}`:''}" onclick="toggleHabit('${h.id}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
       </button>
       <div class="habit-info">
@@ -828,27 +820,21 @@ function renderHabits() {
         <div class="habit-streak">${streak} day streak</div>
         <div class="habit-week">${weekDots}</div>
       </div>
-      <button class="habit-del" onclick="delHabit('${h.id}')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
+      <button class="habit-del" onclick="delHabit('${h.id}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>`;
   }).join('');
 }
 
 function toggleHabit(id) {
-  const logs = load('habitLog');
-  const d = today();
+  const logs = load('habitLog'), d = today();
   const idx = logs.findIndex(l => l.habitId === id && l.date === d);
-  if (idx >= 0) logs.splice(idx, 1);
-  else logs.push({ habitId: id, date: d });
-  save('habitLog', logs);
-  renderHabits();
+  if (idx >= 0) logs.splice(idx, 1); else logs.push({ habitId: id, date: d });
+  save('habitLog', logs); renderHabits();
 }
 
 function calcStreak(habitId, logs) {
   const done = new Set(logs.filter(l => l.habitId === habitId).map(l => l.date));
-  let streak = 0;
-  const d = new Date();
+  let streak = 0; const d = new Date();
   if (!done.has(dateStr(d))) d.setDate(d.getDate() - 1);
   while (done.has(dateStr(d))) { streak++; d.setDate(d.getDate() - 1); }
   return streak;
@@ -860,166 +846,301 @@ function delHabit(id) {
   renderHabits();
 }
 
-// ══════════════════════════════════════
-// ── STATS ──
-// ══════════════════════════════════════
-function renderStats() {
-  const activities = load('activities');
-  const journals = load('journal');
-  const habits = load('habits');
-  const habitLogs = load('habitLog');
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// EXERCISE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function saveExercise() {
+  const name = document.getElementById('ex-name').value.trim();
+  if (!name) { document.getElementById('ex-name').focus(); return; }
+  const catBtn = document.querySelector('#ex-cat-picker .feeling-btn.selected');
+  const intBtn = document.querySelector('#ex-intensity-picker .feeling-btn.selected');
+  const entry = {
+    id: uid(),
+    date: document.getElementById('ex-date').value || today(),
+    time: document.getElementById('ex-time').value,
+    name,
+    category: catBtn ? catBtn.dataset.v : 'Other',
+    duration: parseInt(document.getElementById('ex-dur').value) || 0,
+    sets: document.getElementById('ex-sets').value.trim(),
+    intensity: intBtn ? intBtn.dataset.v : 'Moderate',
+    notes: document.getElementById('ex-notes').value.trim()
+  };
+  const list = load('exercises'); list.unshift(entry); save('exercises', list);
+  document.getElementById('ex-name').value = '';
+  document.getElementById('ex-sets').value = '';
+  document.getElementById('ex-notes').value = '';
+  closeModalDirect('exercise');
+  renderExercisePage();
+}
 
-  // Last 7 days range
-  const last7 = Array.from({length:7}, (_,i) => offsetDate(i-6));
-  const last14 = Array.from({length:14}, (_,i) => offsetDate(i-13));
+function renderExercisePage() {
+  renderExerciseSummary();
+  renderExerciseChart();
+  renderExerciseFilter();
+  renderExerciseList();
+}
 
-  // This week vs last week minutes
-  const thisWeekMins = activities.filter(a => last7.includes(a.date)).reduce((s,a) => s+a.duration, 0);
-  const lastWeekDays = Array.from({length:7}, (_,i) => offsetDate(i-13));
-  const lastWeekMins = activities.filter(a => lastWeekDays.includes(a.date)).reduce((s,a) => s+a.duration, 0);
-  const weekDiff = lastWeekMins > 0 ? Math.round(((thisWeekMins - lastWeekMins) / lastWeekMins) * 100) : null;
-
-  // Sessions this week
-  const weekSessions = activities.filter(a => last7.includes(a.date)).length;
-
-  // Streak of any activity
-  let actStreak = 0;
-  const actDates = new Set(activities.map(a => a.date));
-  const sd = new Date();
-  if (!actDates.has(dateStr(sd))) sd.setDate(sd.getDate() - 1);
-  while (actDates.has(dateStr(sd))) { actStreak++; sd.setDate(sd.getDate() - 1); }
-
-  // Journal entries this week
-  const weekJournals = journals.filter(j => last7.includes(j.date)).length;
-
-  // Top activities by total minutes (all time)
-  const actMap = {};
-  activities.forEach(a => { actMap[a.name] = (actMap[a.name]||0) + a.duration; });
-  const topActs = Object.entries(actMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const maxMin = topActs[0]?.[1] || 1;
-
-  // Mood trend — last 14 days, last entry per day
-  const moodByDay = {};
-  journals.forEach(j => { moodByDay[j.date] = j.mood; }); // later entries overwrite, which is fine since list is newest-first; let's fix
-  // journals are newest-first, so first seen = latest
-  const moodByDayFinal = {};
-  [...journals].reverse().forEach(j => { moodByDayFinal[j.date] = j.mood; });
-
-  const dayLabels = ['S','M','T','W','T','F','S'];
-
-  // Build HTML
-  let html = '';
-
-  // ── Row 1: key stats ──
-  const diffLabel = weekDiff !== null
-    ? `<div class="stat-sub" style="color:${weekDiff >= 0 ? 'var(--green)' : 'var(--rose)'}">${weekDiff >= 0 ? '▲' : '▼'} ${Math.abs(weekDiff)}% vs last week</div>`
-    : '';
-
-  html += `<div class="stat-grid">
-    <div class="stat-box">
-      <div class="stat-num" style="color:var(--accent)">${thisWeekMins}</div>
-      <div class="stat-label">Minutes this week</div>
-      ${diffLabel}
+function renderExerciseSummary() {
+  const exercises = load('exercises');
+  const last7 = Array.from({length:7},(_,i)=>offsetDate(i-6));
+  const weekEx = exercises.filter(e => last7.includes(e.date));
+  const weekMins = weekEx.reduce((s,e)=>s+e.duration,0);
+  const weekSessions = weekEx.length;
+  const activeDays = new Set(weekEx.map(e=>e.date)).size;
+  document.getElementById('ex-summary').innerHTML = `
+    <div class="ex-summary-box">
+      <div class="ex-summary-num" style="color:var(--sky)">${weekMins}</div>
+      <div class="ex-summary-label">min this week</div>
     </div>
-    <div class="stat-box">
-      <div class="stat-num" style="color:var(--sky)">${weekSessions}</div>
-      <div class="stat-label">Sessions this week</div>
+    <div class="ex-summary-box">
+      <div class="ex-summary-num" style="color:var(--rose)">${weekSessions}</div>
+      <div class="ex-summary-label">sessions</div>
     </div>
-    <div class="stat-box">
-      <div class="stat-num" style="color:var(--amber)">${actStreak}</div>
-      <div class="stat-label">Day streak</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-num" style="color:var(--green)">${weekJournals}</div>
-      <div class="stat-label">Journal entries</div>
-    </div>
-  </div>`;
+    <div class="ex-summary-box">
+      <div class="ex-summary-num" style="color:var(--green)">${activeDays}</div>
+      <div class="ex-summary-label">active days</div>
+    </div>`;
+}
 
-  // ── Mood trend ──
-  html += `<div class="card">
-    <div class="section-title">Mood — last 14 days</div>
-    <div class="mood-grid">`;
-  last14.forEach(dd => {
-    const mood = moodByDayFinal[dd];
-    const color = mood ? moodColors[mood] : 'var(--surface2)';
-    const label = new Date(dd + 'T12:00:00').getDate();
-    const title = mood ? `${dd}: ${mood}` : dd;
-    html += `<div class="mood-cell" title="${title}" style="background:${color}20;border:1.5px solid ${color}40">
-      <span style="color:${mood ? color : 'var(--border)'};font-size:10px">${label}</span>
+function renderExerciseChart() {
+  const exercises = load('exercises');
+  const CHART_H = 140;
+
+  // Build 8-week buckets (Sunday→Saturday)
+  const weeks = [];
+  const now = new Date();
+  const thisSunday = new Date(now);
+  thisSunday.setDate(now.getDate() - now.getDay());
+  for (let w = 7; w >= 0; w--) {
+    const wStart = new Date(thisSunday);
+    wStart.setDate(thisSunday.getDate() - w * 7);
+    const wEnd = new Date(wStart); wEnd.setDate(wStart.getDate() + 6);
+    const wStartStr = dateStr(wStart), wEndStr = dateStr(wEnd);
+    const label = `${wStart.getMonth()+1}/${wStart.getDate()}`;
+    const bycat = {};
+    CATS.forEach(c => bycat[c] = 0);
+    exercises.filter(e => e.date >= wStartStr && e.date <= wEndStr)
+      .forEach(e => { bycat[e.category] = (bycat[e.category]||0) + e.duration; });
+    const total = CATS.reduce((s,c)=>s+bycat[c],0);
+    weeks.push({ label, bycat, total });
+  }
+
+  const maxTotal = Math.max(...weeks.map(w=>w.total), 1);
+
+  let barsHtml = '';
+  weeks.forEach(w => {
+    const barH = Math.max(Math.round((w.total / maxTotal) * CHART_H), 0);
+    let segs = '';
+    CATS.forEach(cat => {
+      if (w.bycat[cat] > 0) {
+        const segH = Math.max(Math.round((w.bycat[cat] / maxTotal) * CHART_H), 2);
+        segs += `<div class="chart-bar-seg" style="height:${segH}px;background:${CAT_COLORS[cat]}"></div>`;
+      }
+    });
+    barsHtml += `<div class="chart-col">
+      ${barH > 0
+        ? `<div class="chart-bar-stack" style="height:${barH}px" title="${w.total} min">${segs}</div>`
+        : `<div class="chart-bar-empty" style="height:3px"></div>`
+      }
+      <div class="chart-label">${w.label}</div>
     </div>`;
   });
-  html += `</div>
-    <div class="mood-legend">
-      ${Object.entries(moodColors).map(([m,c]) => `<div class="mood-legend-item"><div class="mood-legend-dot" style="background:${c}"></div>${m}</div>`).join('')}
-    </div>
+
+  let legendHtml = CATS.map(c =>
+    `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:${CAT_COLORS[c]}"></div>${c}</div>`
+  ).join('');
+
+  document.getElementById('ex-chart-bars').innerHTML = barsHtml;
+  document.getElementById('ex-chart-legend').innerHTML = legendHtml;
+}
+
+function renderExerciseFilter() {
+  const el = document.getElementById('ex-filter');
+  const all = ['All', ...CATS];
+  el.innerHTML = all.map(c => {
+    const color = c === 'All' ? null : CAT_COLORS[c];
+    const isActive = exFilterCat === c;
+    const style = color && isActive ? `background:${color};border-color:${color};color:#0f172a` :
+                  color ? `border-color:${color}40;color:${color}` : '';
+    return `<button class="ex-cat-btn${isActive&&c==='All'?' active':''}" style="${style}" onclick="setExFilter('${c}')">${c}</button>`;
+  }).join('');
+}
+
+function setExFilter(cat) { exFilterCat = cat; renderExerciseFilter(); renderExerciseList(); }
+
+function renderExerciseList() {
+  const all = load('exercises');
+  const list = exFilterCat === 'All' ? all : all.filter(e => e.category === exFilterCat);
+  const el = document.getElementById('exercise-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">🏋️</div>No exercises logged yet.<br>Hit that + button!</div>';
+    return;
+  }
+  el.innerHTML = list.map(e => {
+    const color = CAT_COLORS[e.category] || '#818cf8';
+    return `<div class="card card-sm">
+      <div class="entry">
+        <div class="entry-dot" style="background:${color}"></div>
+        <div class="entry-body">
+          <div class="entry-meta">${e.date} · ${e.time||'--:--'} · ${e.duration} min</div>
+          <div class="entry-title">${esc(e.name)}</div>
+          <div style="margin-top:4px">
+            <span class="entry-tag" style="background:${color}22;color:${color}">${esc(e.category)}</span>
+            <span class="intensity-badge intensity-${e.intensity}">${e.intensity}</span>
+            ${e.sets ? `<span class="entry-tag">${esc(e.sets)}</span>` : ''}
+          </div>
+          ${e.notes ? `<div class="entry-sub" style="margin-top:6px">${esc(e.notes)}</div>` : ''}
+          <div class="entry-actions"><button class="entry-del" onclick="delExercise('${e.id}')">Delete</button></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function delExercise(id) {
+  save('exercises', load('exercises').filter(e => e.id !== id));
+  renderExercisePage();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// STATS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function renderStats() {
+  const activities = load('activities'), journals = load('journal');
+  const habits = load('habits'), habitLogs = load('habitLog');
+  const exercises = load('exercises');
+  const last7 = Array.from({length:7},(_,i)=>offsetDate(i-6));
+  const last14 = Array.from({length:14},(_,i)=>offsetDate(i-13));
+
+  const thisWeekMins = activities.filter(a=>last7.includes(a.date)).reduce((s,a)=>s+a.duration,0);
+  const lastWeekDays = Array.from({length:7},(_,i)=>offsetDate(i-13));
+  const lastWeekMins = activities.filter(a=>lastWeekDays.includes(a.date)).reduce((s,a)=>s+a.duration,0);
+  const weekDiff = lastWeekMins > 0 ? Math.round(((thisWeekMins-lastWeekMins)/lastWeekMins)*100) : null;
+  const weekSessions = activities.filter(a=>last7.includes(a.date)).length;
+  const exWeekMins = exercises.filter(e=>last7.includes(e.date)).reduce((s,e)=>s+e.duration,0);
+
+  let actStreak = 0; const actDates = new Set(activities.map(a=>a.date));
+  const sd = new Date();
+  if (!actDates.has(dateStr(sd))) sd.setDate(sd.getDate()-1);
+  while (actDates.has(dateStr(sd))) { actStreak++; sd.setDate(sd.getDate()-1); }
+
+  const weekJournals = journals.filter(j=>last7.includes(j.date)).length;
+
+  // Top mindful activities
+  const actMap = {};
+  activities.forEach(a => { actMap[a.name]=(actMap[a.name]||0)+a.duration; });
+  const topActs = Object.entries(actMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxActMin = topActs[0]?.[1] || 1;
+
+  // Top exercise categories this week
+  const exCatMap = {};
+  exercises.filter(e=>last7.includes(e.date)).forEach(e => { exCatMap[e.category]=(exCatMap[e.category]||0)+e.duration; });
+  const topExCats = Object.entries(exCatMap).sort((a,b)=>b[1]-a[1]);
+  const maxExMin = topExCats[0]?.[1] || 1;
+
+  // Mood trend
+  const moodByDay = {};
+  [...journals].reverse().forEach(j => { moodByDay[j.date]=j.mood; });
+
+  let html = '';
+
+  // Summary row
+  const diffLabel = weekDiff !== null
+    ? `<div class="stat-sub" style="color:${weekDiff>=0?'var(--green)':'var(--rose)'}">${weekDiff>=0?'▲':'▼'}${Math.abs(weekDiff)}% vs last week</div>`
+    : '';
+  html += `<div class="stat-grid">
+    <div class="stat-box"><div class="stat-num" style="color:var(--accent)">${thisWeekMins}</div><div class="stat-label">Mindful min</div>${diffLabel}</div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--sky)">${weekSessions}</div><div class="stat-label">Sessions</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--orange)">${exWeekMins}</div><div class="stat-label">Exercise min</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--amber)">${actStreak}</div><div class="stat-label">Day streak</div></div>
   </div>`;
 
-  // ── Top activities ──
+  // Mood trend
+  html += `<div class="card"><div class="section-title">Mood — last 14 days</div><div class="mood-grid">`;
+  last14.forEach(dd => {
+    const mood = moodByDay[dd];
+    const color = mood ? moodColors[mood] : 'var(--surface2)';
+    html += `<div class="mood-cell" title="${mood||'No entry'} · ${dd}" style="background:${color}25;border:1.5px solid ${color}50">
+      <span style="color:${mood?color:'var(--border)'};font-size:10px">${new Date(dd+'T12:00:00').getDate()}</span>
+    </div>`;
+  });
+  html += `</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">`;
+  Object.entries(moodColors).forEach(([m,c]) => {
+    html += `<div style="display:flex;align-items:center;gap:3px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;border-radius:3px;background:${c}"></div>${m}</div>`;
+  });
+  html += `</div></div>`;
+
+  // Top mindful activities
   if (topActs.length) {
-    html += `<div class="card"><div class="section-title">Top Activities (all time)</div>`;
-    topActs.forEach(([name, mins]) => {
-      const pct = Math.round((mins / maxMin) * 100);
+    html += `<div class="card"><div class="section-title">Top Mindful Activities</div>`;
+    topActs.forEach(([name,mins]) => {
       html += `<div class="bar-row">
         <div class="bar-label-row"><span>${esc(name)}</span><span class="bar-val">${mins} min</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(mins/maxActMin*100)}%"></div></div>
       </div>`;
     });
     html += `</div>`;
   }
 
-  // ── Habit overview ──
+  // Exercise breakdown this week
+  if (topExCats.length) {
+    html += `<div class="card"><div class="section-title">Exercise This Week</div>`;
+    topExCats.forEach(([cat,mins]) => {
+      html += `<div class="bar-row">
+        <div class="bar-label-row"><span>${esc(cat)}</span><span class="bar-val">${mins} min</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(mins/maxExMin*100)}%;background:${CAT_COLORS[cat]}"></div></div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Habits
   if (habits.length) {
     html += `<div class="card"><div class="section-title">Habit Streaks</div>`;
     habits.forEach(h => {
       const streak = calcStreak(h.id, habitLogs);
-      const total = habitLogs.filter(l => l.habitId === h.id).length;
+      const total = habitLogs.filter(l=>l.habitId===h.id).length;
       html += `<div class="habit-stat-row">
-        <div class="habit-stat-color" style="background:${h.color}"></div>
+        <div class="habit-stat-dot" style="background:${h.color}"></div>
         <div class="habit-stat-name">${esc(h.name)}</div>
-        <div class="habit-stat-streak">🔥 ${streak} streak · ${total} total</div>
+        <div class="habit-stat-streak">🔥${streak} · ${total} total</div>
       </div>`;
     });
     html += `</div>`;
   }
 
-  // ── Export ──
+  // Export
   html += `<div class="card">
     <div class="section-title">Data</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Export all your data as a JSON backup file.</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Export all your data as a JSON backup.</p>
     <button class="btn" onclick="exportData()">Export Backup (JSON)</button>
   </div>`;
 
   document.getElementById('stats-content').innerHTML = html;
 }
 
-// ── Export ──
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// EXPORT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function exportData() {
-  const data = {
-    exported: new Date().toISOString(),
-    activities: load('activities'),
-    journal: load('journal'),
-    habits: load('habits'),
-    habitLog: load('habitLog')
-  };
+  const data = { exported: new Date().toISOString(), activities: load('activities'), journal: load('journal'), habits: load('habits'), habitLog: load('habitLog'), exercises: load('exercises') };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `mindfulness-backup-${today()}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  a.href = url; a.download = `mindfulness-backup-${today()}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
-// ── Escape HTML ──
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// UTILS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 // ── Init ──
 renderActivities();
 renderJournal();
 
-// ── Service Worker ──
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
