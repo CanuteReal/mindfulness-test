@@ -435,6 +435,15 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
       <div><label>Duration (min)</label><input id="ex-dur" type="number" min="1" value="30"></div>
       <div><label>Sets / Reps (opt.)</label><input id="ex-sets" placeholder="e.g. 3×10"></div>
     </div>
+    <div class="form-row form-grid">
+      <div><label>Weight (opt.)</label><input id="ex-weight" type="number" min="0" step="0.5" placeholder="e.g. 135"></div>
+      <div><label>Unit</label>
+        <div class="feeling-row" id="ex-weight-unit-picker">
+          <button class="feeling-btn selected" data-v="lbs">lbs</button>
+          <button class="feeling-btn" data-v="kg">kg</button>
+        </div>
+      </div>
+    </div>
     <div class="form-row">
       <label>Intensity</label>
       <div class="feeling-row" id="ex-intensity-picker">
@@ -862,12 +871,15 @@ function saveExercise() {
     category: catBtn ? catBtn.dataset.v : 'Other',
     duration: parseInt(document.getElementById('ex-dur').value) || 0,
     sets: document.getElementById('ex-sets').value.trim(),
+    weight: document.getElementById('ex-weight').value.trim(),
+    weightUnit: (document.querySelector('#ex-weight-unit-picker .feeling-btn.selected') || {}).dataset?.v || 'lbs',
     intensity: intBtn ? intBtn.dataset.v : 'Moderate',
     notes: document.getElementById('ex-notes').value.trim()
   };
   const list = load('exercises'); list.unshift(entry); save('exercises', list);
   document.getElementById('ex-name').value = '';
   document.getElementById('ex-sets').value = '';
+  document.getElementById('ex-weight').value = '';
   document.getElementById('ex-notes').value = '';
   closeModalDirect('exercise');
   renderExercisePage();
@@ -988,6 +1000,7 @@ function renderExerciseList() {
             <span class="entry-tag" style="background:${color}22;color:${color}">${esc(e.category)}</span>
             <span class="intensity-badge intensity-${e.intensity}">${e.intensity}</span>
             ${e.sets ? `<span class="entry-tag">${esc(e.sets)}</span>` : ''}
+            ${e.weight ? `<span class="entry-tag">⚖ ${esc(e.weight)} ${esc(e.weightUnit||'lbs')}</span>` : ''}
           </div>
           ${e.notes ? `<div class="entry-sub" style="margin-top:6px">${esc(e.notes)}</div>` : ''}
           <div class="entry-actions"><button class="entry-del" onclick="delExercise('${e.id}')">Delete</button></div>
