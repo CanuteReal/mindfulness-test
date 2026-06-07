@@ -938,7 +938,7 @@ function renderExerciseSummary() {
   const last7 = Array.from({length:7},(_,i)=>offsetDate(i-6));
   const weekEx = exercises.filter(e => last7.includes(e.date));
   const weekMins = weekEx.reduce((s,e)=>s+e.duration,0);
-  const weekSessions = weekEx.length;
+  const weekSessions = new Set(weekEx.map(e => e.date)).size;
   const activeDays = new Set(weekEx.map(e=>e.date)).size;
   document.getElementById('ex-summary').innerHTML = `
     <div class="ex-summary-box">
@@ -1029,24 +1029,40 @@ function renderExerciseList() {
     el.innerHTML = '<div class="empty-state"><div class="icon">🏋️</div>No exercises logged yet.<br>Hit that + button!</div>';
     return;
   }
-  el.innerHTML = list.map(e => {
-    const color = CAT_COLORS[e.category] || '#818cf8';
-    return `<div class="card card-sm">
-      <div class="entry">
+  // Group by date (order preserved from storage, most recent first)
+  const dates = [];
+  const byDate = {};
+  list.forEach(e => {
+    if (!byDate[e.date]) { byDate[e.date] = []; dates.push(e.date); }
+    byDate[e.date].push(e);
+  });
+  el.innerHTML = dates.map(date => {
+    const dayEx = byDate[date];
+    const totalMins = dayEx.reduce((s, e) => s + e.duration, 0);
+    const rows = dayEx.map(e => {
+      const color = CAT_COLORS[e.category] || '#818cf8';
+      return `<div class="entry" style="padding:10px 0;border-top:1px solid var(--border)">
         <div class="entry-dot" style="background:${color}"></div>
         <div class="entry-body">
-          <div class="entry-meta">${e.date} · ${e.time||'--:--'} · ${e.duration} min</div>
-          <div class="entry-title">${esc(e.name)}</div>
+          <div class="entry-title">${esc(e.name)}${e.time ? `<span class="entry-meta" style="margin-left:8px">${e.time}</span>` : ''}</div>
           <div style="margin-top:4px">
             <span class="entry-tag" style="background:${color}22;color:${color}">${esc(e.category)}</span>
             <span class="intensity-badge intensity-${e.intensity}">${e.intensity}</span>
+            <span class="entry-tag">${e.duration} min</span>
             ${e.sets ? `<span class="entry-tag">${esc(e.sets)}</span>` : ''}
             ${e.weight ? `<span class="entry-tag">⚖ ${esc(e.weight)} ${esc(e.weightUnit||'lbs')}</span>` : ''}
           </div>
           ${e.notes ? `<div class="entry-sub" style="margin-top:6px">${esc(e.notes)}</div>` : ''}
           <div class="entry-actions"><button class="entry-del" onclick="editExercise('${e.id}')">Edit</button><button class="entry-del" onclick="delExercise('${e.id}')">Delete</button></div>
         </div>
+      </div>`;
+    }).join('');
+    return `<div class="card card-sm">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:600;font-size:0.95rem">${date}</div>
+        <div class="entry-meta">${totalMins} min · ${dayEx.length} exercise${dayEx.length !== 1 ? 's' : ''}</div>
       </div>
+      ${rows}
     </div>`;
   }).join('');
 }
